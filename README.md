@@ -24,7 +24,8 @@ Todo está al principio de `src/App.jsx`:
 
 - `LINKS.whatsappNumber` — tu número con prefijo de país, sin `+` ni espacios.
 - `LINKS.instagram` — enlace de Instagram.
-- `IMAGES` — fotos del abanico y logo (archivos en `public/img/`).
-- `BEATS` — añade `src: "beats/tema.mp3"` para reproducir audio real.
+- `IMAGES` — logo, fotos del estudio (`public/img/`) y fotos de ambiente (`public/img/stock/`, ver `CREDITOS-FOTOS.md`).
+- `SERVICES` — textos de cada servicio (título, explicación y qué incluye).
+- `VIDEO` — el vídeo del estudio (`public/videos/jv-studio-edit.mp4`). El original sin editar es `jv-hero.mp4`.
 
-`src/JVSlides.jsx` es la versión de 4 slides con scroll-snap y `src/JVLanding.jsx` la landing larga anterior (landing larga con scroll); usa el vídeo de `public/videos/`.
+`src/JVSlides.jsx` y `src/JVLanding.jsx` son versiones anteriores, por si quieres comparar.
