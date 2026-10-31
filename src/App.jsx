@@ -21,7 +21,7 @@ const LINKS = {
   instagramHandle: "@JVPRODUCTION",
   // Música de fondo: pega aquí el enlace de Spotify del artista, álbum o canción
   // (ej: "https://open.spotify.com/artist/XXXX"). Vacío = no se muestra el reproductor.
-  spotify: "",
+  spotify: "https://open.spotify.com/artist/3p2LsUveVusWCTV5PZTKGu", // Vigora
 };
 
 const IMAGES = {
@@ -87,6 +87,9 @@ const MANIFESTO = [
   "a", "la", "última", "mezcla", { img: IMAGES.pxCamera }, "creamos", "el", "sonido", "que", "te",
   "pone", "en", "el", { em: "mapa." }, { img: IMAGES.pxRapper },
 ];
+
+// Quién está detrás del estudio
+const TEAM = ["Vigora", "jwiill.r"];
 
 const STUDIO_LINES = [
   "Cabina tratada y equipo profesional.",
@@ -264,8 +267,6 @@ html, body { background: #050505; margin: 0; }
 @keyframes jv-eq { 0%,100% { transform: scaleY(.18) } 50% { transform: scaleY(1) } }
 @keyframes jv-load { from { width: 0 } to { width: 100% } }
 @keyframes jv-sweep { from { left: 0 } to { left: 100% } }
-@keyframes jv-drip { 0% { transform: scaleY(.15) } 55% { transform: scaleY(1) } 80% { transform: scaleY(1.06) } 100% { transform: scaleY(.15) } }
-@keyframes jv-drop { 0%,62% { opacity: 0; transform: translateY(0) } 66% { opacity: 1 } 100% { opacity: 0; transform: translateY(160px) } }
 @keyframes jv-pulse { 0%,100% { opacity: .6 } 50% { opacity: 1 } }
 @keyframes jv-hint {0% { transform: translateY(-100%) } 100% { transform: translateY(200%) } }
 @keyframes jv-morph { 0%,100% { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59% } 50% { border-radius: 58% 42% 38% 62% / 55% 61% 39% 45% } }
@@ -425,64 +426,27 @@ function Intro({ onDone }) {
 const PISTOL =
   "M6 18 H170 L176 22 V40 H150 V50 H114 C114 64 106 70 94 70 H86 V62 C95 62 100 58 100 50 H64 L46 110 H6 L24 40 H6 Z";
 
-/** Gota de sangre que cuelga: crece, se estira y suelta una gota */
-function Drip({ x, w, len, delay, dur }) {
-  return (
-    <g style={{ animation: `jv-drip ${dur}s cubic-bezier(.5,0,.6,1) ${delay}s infinite`, transformOrigin: `${x}px 0px`, transformBox: "view-box" }}>
-      <path
-        d={`M${x - w * 1.6} 0 C${x - w} ${len * 0.25}, ${x - w * 0.4} ${len * 0.55}, ${x - w * 0.45} ${len} L${x + w * 0.45} ${len} C${x + w * 0.4} ${len * 0.55}, ${x + w} ${len * 0.25}, ${x + w * 1.6} 0 Z`}
-        fill="url(#jv-blood)"
-      />
-      <ellipse cx={x} cy={len + w * 0.55} rx={w * 0.95} ry={w * 1.15} fill="url(#jv-blood)" />
-      <ellipse cx={x - w * 0.3} cy={len + w * 0.2} rx={w * 0.25} ry={w * 0.4} fill="#ff8a90" opacity=".55" />
-      <circle cx={x} cy={len + w * 2.2} r={w * 0.6} fill="#c00010" style={{ animation: `jv-drop ${dur}s ease-in ${delay}s infinite` }} />
-    </g>
-  );
-}
-
-/** Logo JV en rojo sangre y blanco, con armas cruzadas detrás y sangre que gotea */
+/** Logo JV en rojo y blanco con armas cruzadas detrás */
 function VampireLogo({ className = "" }) {
   return (
     <div className={`relative aspect-[827/804] w-full ${className}`}>
       {/* Armas cruzadas */}
-      <svg viewBox="0 0 400 260" className="absolute left-1/2 top-[56%] w-[150%] -translate-x-1/2 -translate-y-1/2 opacity-70" aria-hidden="true">
+      <svg viewBox="0 0 400 260" className="absolute left-1/2 top-[56%] w-[150%] -translate-x-1/2 -translate-y-1/2 opacity-80" aria-hidden="true">
         <g transform="translate(200 130) rotate(-24) translate(-30 -60)">
-          <path d={PISTOL} fill="#1a0003" stroke="#E10600" strokeWidth="1.6" />
+          <path d={PISTOL} fill="#0a0a0a" stroke="rgba(255,255,255,.55)" strokeWidth="1.4" />
         </g>
         <g transform="translate(200 130) scale(-1 1) rotate(-24) translate(-30 -60)">
-          <path d={PISTOL} fill="#1a0003" stroke="#E10600" strokeWidth="1.6" />
+          <path d={PISTOL} fill="#0a0a0a" stroke="rgba(255,255,255,.55)" strokeWidth="1.4" />
         </g>
       </svg>
-      {/* Resplandor rojo */}
-      <div className="absolute inset-[18%] rounded-full bg-[#E10600]/30 blur-[50px] [animation:jv-pulse_4s_ease-in-out_infinite]" />
+      {/* Halo blanco tenue */}
+      <div className="absolute inset-[18%] rounded-full bg-white/10 blur-[60px]" />
       <img
         src={IMAGES.logoVampire}
         alt="JV Productions"
         className="relative h-full w-full object-contain"
-        style={{ filter: "drop-shadow(0 0 18px rgba(225,6,0,.55)) drop-shadow(0 6px 10px rgba(0,0,0,.9))" }}
+        style={{ filter: "drop-shadow(0 6px 14px rgba(0,0,0,.9))" }}
       />
-      {/* Sangre que gotea desde la firma "Productions" */}
-      <svg viewBox="0 0 400 140" className="pointer-events-none absolute left-0 top-[72%] w-full overflow-visible" aria-hidden="true">
-        <defs>
-          <linearGradient id="jv-blood" x1="0" x2="1">
-            <stop offset="0" stopColor="#7a0008" />
-            <stop offset=".45" stopColor="#e3001b" />
-            <stop offset=".6" stopColor="#ff4d5a" />
-            <stop offset="1" stopColor="#8a0010" />
-          </linearGradient>
-        </defs>
-        {/* Mancha de la que cuelgan las gotas */}
-        <path
-          d="M84 2 C100 -2 112 9 128 6 C146 2 152 12 170 9 C188 5 200 13 218 8 C236 3 246 12 262 8 C280 4 292 13 310 7 C322 3 334 6 340 3 L340 0 L84 0 Z"
-          fill="url(#jv-blood)"
-        />
-        <Drip x={108} w={7} len={60} delay={0} dur={7} />
-        <Drip x={150} w={5} len={96} delay={1.6} dur={8.5} />
-        <Drip x={196} w={8} len={74} delay={0.8} dur={6.5} />
-        <Drip x={238} w={4.5} len={118} delay={2.4} dur={9} />
-        <Drip x={276} w={6} len={52} delay={3.1} dur={7.5} />
-        <Drip x={318} w={4.5} len={84} delay={1.1} dur={8} />
-      </svg>
     </div>
   );
 }
@@ -502,7 +466,7 @@ function SpotifyPlayer({ className = "" }) {
   );
 }
 
-/** Foto real etalonada con la luz del estudio: contraste, sombras cobalto, luces ámbar y viñeta */
+/** Foto real en blanco y negro con contraste y viñeta */
 function Photo({ src, pos = "50% 50%", className = "relative", imgClassName = "", imgStyle, children }) {
   return (
     <div className={`overflow-hidden ${className}`}>
@@ -510,9 +474,9 @@ function Photo({ src, pos = "50% 50%", className = "relative", imgClassName = ""
         src={src}
         alt=""
         className={`absolute inset-0 h-full w-full object-cover ${imgClassName}`}
-        style={{ objectPosition: pos, filter: "contrast(1.15) saturate(.85) brightness(.82)", ...imgStyle }}
+        style={{ objectPosition: pos, filter: "grayscale(1) contrast(1.25) brightness(.8)", ...imgStyle }}
       />
-      <div className="absolute inset-0 mix-blend-soft-light" style={{ background: "linear-gradient(160deg, rgba(140,0,12,.6), rgba(0,0,0,.25) 50%, rgba(225,6,0,.45))" }} />
+      <div className="absolute inset-0 mix-blend-soft-light" style={{ background: "linear-gradient(160deg, rgba(0,0,0,.45), rgba(0,0,0,.1) 50%, rgba(0,0,0,.5))" }} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,transparent_40%,rgba(5,5,5,.75)_100%)]" />
       {children}
     </div>
@@ -606,6 +570,14 @@ function ChapterStudio({ index, setRef }) {
             <h2 className="mt-1 font-['Jost'] text-[clamp(1.8rem,4.6vw,4.2rem)] font-extralight uppercase leading-[1.02] tracking-[0.04em] text-white">
               <SplitReveal text="Donde nace tu sonido" from={0.55} to={1} letterClass="jv-chrome" />
             </h2>
+            <p className="mt-3 font-['Space_Grotesk'] text-sm uppercase tracking-[0.2em] text-zinc-400" style={{ opacity: reveal("--enter", 0.8, 1) }}>
+              Detrás del sonido: {TEAM.map((n, i) => (
+                <React.Fragment key={n}>
+                  {i > 0 && <span className="mx-2 text-[#E10600]">×</span>}
+                  <span className="text-white">{n}</span>
+                </React.Fragment>
+              ))}
+            </p>
             <ul className="mt-4 hidden space-y-3 md:mt-8 md:block">
               {STUDIO_LINES.map((l, i) => {
                 const t = reveal("--w", (i * 0.25).toFixed(2), (i * 0.25 + 0.35).toFixed(2));
@@ -792,6 +764,7 @@ function ChapterStatement({ index, setRef }) {
             <ParentalAdvisory />
             <span className="font-['Space_Grotesk'] text-sm text-zinc-300">Spotify · Apple Music · YouTube · TikTok</span>
           </div>
+          <SpotifyPlayer className="mt-8 max-w-md md:hidden" />
         </div>
       </div>
     </section>
@@ -847,11 +820,11 @@ function ChapterOrigin({ index, setRef }) {
       style={{ "--h": 0, "--a": 0, "--b": 0, "--c": 0, "--d": 0, "--s": 1.8 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        {/* Fondo: negro con un resplandor rojo sangre desde arriba */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,#3a0005_0%,#050505_62%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(225,6,0,.22),transparent_60%)]" style={{ opacity: "var(--b)" }} />
+        {/* Fondo negro con una luz blanca tenue desde arriba */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,#1a1a1c_0%,#050505_62%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255,255,255,.06),transparent_60%)]" style={{ opacity: "var(--b)" }} />
 
-        {/* Escena 1: micro bajo un haz de luz, virado a rojo y negro. La cámara avanza despacio. */}
+        {/* Escena 1: micro bajo un haz de luz, en blanco y negro. La cámara avanza despacio. */}
         <div className="absolute inset-0" style={{ opacity: "calc(1 - var(--a) * 0.85)" }}>
           <img
             src={IMAGES.heroMic}
@@ -859,17 +832,15 @@ function ChapterOrigin({ index, setRef }) {
             className="absolute inset-0 h-full w-full object-cover"
             style={{
               objectPosition: "50% 30%",
-              filter: "grayscale(1) contrast(1.3) brightness(.8)",
+              filter: "grayscale(1) contrast(1.35) brightness(.7)",
               transform: "translate(calc(var(--mx, 0) * -12px), calc(var(--my, 0) * -8px + var(--h) * -3dvh)) scale(calc(1.04 + var(--h) * 0.08 + var(--a) * 0.05))",
             }}
           />
-          <div className="absolute inset-0 bg-[#8a0008] mix-blend-multiply" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_20%,rgba(255,40,40,.35),transparent_55%)] mix-blend-screen" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,transparent_0%,rgba(5,5,5,.5)_60%,rgba(5,5,5,.95)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#050505] to-transparent" />
         </div>
 
-        {/* Rayos de luz roja desde arriba; se inclinan con el ratón */}
+        {/* Rayos de luz desde arriba; se inclinan con el ratón */}
         <div
           className="pointer-events-none absolute inset-x-0 top-0 h-[75%] origin-top mix-blend-screen"
           style={{ opacity: "calc(0.65 - var(--c) * 0.65)", transform: "skewX(calc(var(--mx, 0) * -6deg))" }}
@@ -878,13 +849,13 @@ function ChapterOrigin({ index, setRef }) {
           {[14, 27, 39, 48, 55, 66, 79, 88].map((l, i) => (
             <span
               key={l}
-              className="absolute top-0 h-full bg-gradient-to-b from-red-100/50 via-red-500/15 to-transparent blur-[2px]"
+              className="absolute top-0 h-full bg-gradient-to-b from-white/45 via-white/10 to-transparent blur-[2px]"
               style={{ left: `${l}%`, width: `${[6, 2, 10, 1, 4, 2, 8, 1][i]}px`, animation: `jv-beam ${3 + i * 0.7}s ease-in-out ${-i}s infinite` }}
             />
           ))}
         </div>
 
-        {/* Niebla roja en capas con parallax */}
+        {/* Niebla en capas con parallax */}
         <div
           className="absolute inset-0"
           style={{
@@ -892,10 +863,10 @@ function ChapterOrigin({ index, setRef }) {
             opacity: "calc(0.22 + var(--h) * 0.15 - var(--c) * 0.4)",
           }}
         >
-          <Fog seed={4} tint="0.6 0.05 0.06" className="-left-[10%] top-[30%] h-[80%] w-[140%] [animation:jv-drift_40s_ease-in-out_infinite]" />
+          <Fog seed={4} tint="0.7 0.7 0.72" className="-left-[10%] top-[30%] h-[80%] w-[140%] [animation:jv-drift_40s_ease-in-out_infinite]" />
         </div>
 
-        {/* Logo fijo desde el primer momento: armas cruzadas detrás y sangre goteando */}
+        {/* Logo fijo desde el primer momento, con armas cruzadas detrás */}
         <div
           className="absolute left-1/2 top-[36%] z-[26] w-[clamp(250px,52dvh,520px)] max-w-[92vw]"
           style={{
@@ -913,11 +884,11 @@ function ChapterOrigin({ index, setRef }) {
           style={{ opacity: "calc(1 - var(--b) * 2)", transform: "translateY(calc(var(--h) * -3dvh))" }}
         >
           <div className="flex w-full max-w-xl items-center gap-4">
-            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#E10600]" />
+            <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/60" />
             <h1 className="text-center font-['Jost'] text-[10px] font-light uppercase tracking-[0.42em] text-zinc-100 sm:text-xs md:text-sm">
               Tu música, <span className="font-['UnifrakturMaguntia'] text-[1.5em] normal-case tracking-normal text-[#E10600]">nuestra producción</span>
             </h1>
-            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#E10600]" />
+            <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/60" />
           </div>
         </div>
 
@@ -1057,15 +1028,15 @@ function ChapterBooking({ setRef, booking, setBooking }) {
       {/* La luz se abre en círculo desde abajo */}
       <div className="absolute inset-0" style={{ clipPath: "circle(calc(var(--enter, 0) * 135%) at 50% 100%)" }}>
         <img src={IMAGES.crowdGold} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ transform: "scale(calc(1.08 - var(--enter, 0) * 0.06))" }} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,rgba(20,0,2,.88)_0%,rgba(60,0,5,.8)_45%,rgba(150,0,10,.55)_100%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,rgba(10,10,11,.9)_0%,rgba(5,5,5,.88)_50%,rgba(0,0,0,.8)_100%)]" />
       </div>
-      <Fog seed={21} tint="0.6 0.04 0.05" className="left-0 top-0 h-full w-full" style={{ opacity: "calc(var(--enter, 0) * 0.9)" }} />
+      <Fog seed={21} tint="0.6 0.6 0.62" className="left-0 top-0 h-full w-full" style={{ opacity: "calc(var(--enter, 0) * 0.9)" }} />
       <div
-        className="pointer-events-none absolute left-1/2 top-[18%] -translate-x-1/2 whitespace-nowrap font-['Anton'] text-[clamp(5rem,22vw,22rem)] uppercase leading-none text-[#E10600]/[0.12]"
+        className="pointer-events-none absolute left-1/2 top-[18%] -translate-x-1/2 whitespace-nowrap font-['Anton'] text-[clamp(5rem,22vw,22rem)] uppercase leading-none text-white/[0.05]"
         style={{ transform: "translateX(calc(-50% + (1 - var(--enter, 0)) * 20vw))" }}
         aria-hidden="true"
       >
-        Sangre, sudor y beats
+        Suena a disco
       </div>
 
       <div
