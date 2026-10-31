@@ -8,7 +8,7 @@
  * Personaliza LINKS e IMAGES justo debajo.
  */
 import React, { useState, useEffect, useRef, useContext, createContext } from "react";
-import { ArrowRight, Check, Minus, Plus, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, Check, Minus, Plus, Music, Volume2, VolumeX } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════════
    CONFIGURACIÓN
@@ -49,6 +49,9 @@ const IMAGES = {
   pxMic: "img/stock/px-mic.jpg",
   pxCamera: "img/stock/px-camera.jpg",
 };
+
+// Canción de fondo (muy baja). Empieza con el primer clic o toque en la página; se puede apagar desde el menú.
+const MUSIC = { src: "audio/pendiente-sesion-one.m4a", title: "Pendiente — Sesión One", volume: 0.12 };
 
 const VIDEO = {
   // Montaje del estudio (etalonado, con cortes y cierre con logo) hecho a partir de tu vídeo original
@@ -216,7 +219,7 @@ function useMedia(query) {
 
 const GlobalStyles = () => (
   <style>{`
-@import url('https://fonts.googleapis.com/css2?family=Anton&family=UnifrakturMaguntia&family=Jost:wght@200;300;400;500&family=Mrs+Saint+Delafield&family=Pinyon+Script&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;600;700&family=Jost:wght@200;300;400;500&family=Mrs+Saint+Delafield&family=Pinyon+Script&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 html, body { background: #050505; margin: 0; }
 ::selection { background: #E10600; color: #fff; }
@@ -452,14 +455,14 @@ function VampireLogo({ className = "" }) {
 }
 
 /** Reproductor de Spotify (artista, álbum o canción) a partir de LINKS.spotify */
-function SpotifyPlayer({ className = "" }) {
+function SpotifyPlayer({ className = "", tall = false }) {
   const m = LINKS.spotify.match(/open\.spotify\.com\/(?:intl-[a-z]+\/)?(artist|album|track|playlist)\/([A-Za-z0-9]+)/);
   if (!m) return null;
   return (
     <iframe
       title="Música en Spotify"
       src={`https://open.spotify.com/embed/${m[1]}/${m[2]}?theme=0`}
-      className={`h-[152px] w-full rounded-2xl border-0 ${className}`}
+      className={`${tall ? "h-[232px] md:h-[352px]" : "h-[152px]"} w-full rounded-2xl border-0 ${className}`}
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
       loading="lazy"
     />
@@ -483,6 +486,68 @@ function Photo({ src, pos = "50% 50%", className = "relative", imgClassName = ""
   );
 }
 
+/** Música de fondo: suena bajita tras la primera interacción y se aparta cuando el vídeo tiene el sonido activado */
+function BackgroundMusic() {
+  const audio = useRef(null);
+  const [on, setOn] = useState(false);
+  const wanted = useRef(true); // la persona no la ha apagado
+  const ducked = useRef(false); // el vídeo del estudio está sonando
+
+  const sync = () => {
+    const a = audio.current;
+    if (!a) return;
+    if (wanted.current && !ducked.current) a.play().then(() => setOn(true)).catch(() => setOn(false));
+    else {
+      a.pause();
+      setOn(false);
+    }
+  };
+
+  useEffect(() => {
+    audio.current.volume = MUSIC.volume;
+    const first = () => {
+      sync();
+      ["pointerdown", "keydown", "touchstart"].forEach((t) => window.removeEventListener(t, first));
+    };
+    ["pointerdown", "keydown", "touchstart"].forEach((t) => window.addEventListener(t, first, { passive: true }));
+    const onVideo = (e) => {
+      ducked.current = e.detail;
+      sync();
+    };
+    window.addEventListener("jv-video-sound", onVideo);
+    return () => {
+      ["pointerdown", "keydown", "touchstart"].forEach((t) => window.removeEventListener(t, first));
+      window.removeEventListener("jv-video-sound", onVideo);
+    };
+  }, []);
+
+  return (
+    <>
+      <audio ref={audio} src={MUSIC.src} loop preload="none" />
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          wanted.current = !on;
+          sync();
+        }}
+        aria-label={on ? "Apagar música" : "Poner música"}
+        title={MUSIC.title}
+        className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md md:h-11 md:w-11"
+      >
+        {on ? (
+          <span className="flex h-3.5 items-end gap-[2px]" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <span key={i} className="w-[3px] origin-bottom rounded-full bg-[#E10600]" style={{ height: "100%", animation: `jv-eq s ease-in-out -es infinite` }} />
+            ))}
+          </span>
+        ) : (
+          <Music className="h-4 w-4 text-zinc-400" />
+        )}
+      </button>
+    </>
+  );
+}
+
 function Nav({ goTo, light }) {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex items-center justify-between px-4 py-4 md:px-10 md:py-7">
@@ -492,6 +557,8 @@ function Nav({ goTo, light }) {
           JV Productions
         </span>
       </button>
+      <div className="flex items-center gap-2 md:gap-3">
+      <BackgroundMusic />
       <button
         onClick={() => goTo(S.booking)}
         className={`pointer-events-auto group relative overflow-hidden rounded-full border px-5 py-2.5 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-colors duration-500 md:px-7 md:py-3 ${
@@ -501,6 +568,7 @@ function Nav({ goTo, light }) {
         <span className="absolute inset-0 translate-y-full rounded-full bg-[#E10600] transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-y-0" />
         <span className="relative transition-colors duration-500 group-hover:text-black">Agendar sesión</span>
       </button>
+      </div>
     </header>
   );
 }
@@ -525,12 +593,19 @@ function ChapterStudio({ index, setRef }) {
   // React no sincroniza el atributo muted: se aplica a mano
   useEffect(() => {
     if (main.current) main.current.muted = muted;
+    window.dispatchEvent(new CustomEvent("jv-video-sound", { detail: !muted }));
   }, [muted]);
 
   // Solo reproduce mientras la sección está a la vista
   useEffect(() => {
     const vids = [main.current, ambient.current];
-    const io = new IntersectionObserver(([e]) => vids.forEach((v) => v && (e.isIntersecting ? v.play().catch(() => {}) : v.pause())), { threshold: 0.05 });
+    const io = new IntersectionObserver(
+      ([e]) => {
+        vids.forEach((v) => v && (e.isIntersecting ? v.play().catch(() => {}) : v.pause()));
+        if (!e.isIntersecting) setMuted(true); // al salir, vuelve la música de fondo
+      },
+      { threshold: 0.05 }
+    );
     io.observe(root.current);
     return () => io.disconnect();
   }, []);
@@ -564,7 +639,7 @@ function ChapterStudio({ index, setRef }) {
         <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center gap-6 px-5 pb-6 pt-24 md:flex-row md:justify-between md:gap-16 md:px-12">
           {/* Texto */}
           <div className="w-full max-w-md shrink-0 md:order-1">
-            <p className="font-['UnifrakturMaguntia'] text-xl text-[#FF4D4D] md:text-2xl" style={{ opacity: reveal("--enter", 0.5, 0.9) }}>
+            <p className="font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-xl text-[#FF4D4D] md:text-2xl" style={{ opacity: reveal("--enter", 0.5, 0.9) }}>
               El estudio
             </p>
             <h2 className="mt-1 font-['Jost'] text-[clamp(1.8rem,4.6vw,4.2rem)] font-extralight uppercase leading-[1.02] tracking-[0.04em] text-white">
@@ -589,7 +664,6 @@ function ChapterStudio({ index, setRef }) {
                 );
               })}
             </ul>
-            <SpotifyPlayer className="mt-6 hidden md:block" />
           </div>
 
           {/* Vídeo montado en formato vertical */}
@@ -673,7 +747,7 @@ function ChapterServices({ index, setRef, onBook }) {
 
               <div className="relative flex h-full items-end px-5 pb-10 pt-24 md:items-center md:px-16 md:pb-0">
                 <div className="max-w-xl" style={{ opacity: here, transform: `translateY(calc((1 - ${here}) * 30px))` }}>
-                  <p className="font-['UnifrakturMaguntia'] text-lg text-[#FF4D4D] md:text-2xl">Servicios</p>
+                  <p className="font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-lg text-[#FF4D4D] md:text-2xl">Servicios</p>
                   <h3 className="mt-1 font-['Jost'] text-[clamp(1.9rem,4.4vw,4rem)] font-extralight uppercase leading-[1.02] tracking-[0.03em] text-white">{s.title}</h3>
                   <p className="mt-4 max-w-lg font-['Space_Grotesk'] text-[15px] leading-relaxed text-zinc-300 md:text-lg">{s.text}</p>
                   <ul className="mt-5 space-y-2">
@@ -725,14 +799,14 @@ function ChapterStatement({ index, setRef }) {
   const line2 = "Hacemos realidad tu proyecto.".split(" ");
   const total = line1.length + line2.length;
 
-  useProgress(index, (p) => root.current?.style.setProperty("--q", seg(p, 0.05, 0.75).toFixed(4)));
+  useProgress(index, (p) => root.current?.style.setProperty("--q", seg(p, 0.05, 0.6).toFixed(4)));
 
   const word = (w, i, gold) => {
     const t = `clamp(0, calc(var(--q) * ${total + 2} - ${i}), 1)`;
     return (
       <React.Fragment key={`${gold}-${i}`}>
         <span
-          className={`inline-block ${gold ? "font-['UnifrakturMaguntia'] text-[#FF4D4D]" : ""}`}
+          className={`inline-block ${gold ? "font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-[#FF4D4D]" : ""}`}
           style={{ opacity: `calc(0.12 + 0.88 * ${t})`, filter: `blur(calc((1 - ${t}) * 6px))`, transform: `translateY(calc((1 - ${t}) * 0.25em))` }}
         >
           {w}
@@ -748,23 +822,28 @@ function ChapterStatement({ index, setRef }) {
         setRef(el);
       }}
       aria-label="Desde la idea hasta el lanzamiento"
-      className="relative h-[220vh]"
+      className="relative h-[280vh]"
       style={{ "--q": 0 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         <Photo src={IMAGES.crowdGold} className="absolute inset-0" imgStyle={{ transform: "scale(calc(1.1 - var(--p, 0) * 0.08))" }} />
         <div className="absolute inset-0 bg-[#050505]/55" />
         <div className="relative flex h-full flex-col items-center justify-center px-6 text-center">
-          <p className="max-w-5xl font-['Jost'] text-[clamp(1.7rem,4.6vw,4.4rem)] font-light uppercase leading-[1.12] tracking-[0.04em] text-white">
+          <p className="max-w-5xl font-['Jost'] text-[clamp(1.6rem,3.6vw,3.6rem)] font-light uppercase leading-[1.12] tracking-[0.04em] text-white">
             {line1.map((w, i) => word(w, i, false))}
             <br className="hidden md:block" />
             {line2.map((w, i) => word(w, line1.length + i, true))}
           </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-3" style={{ opacity: reveal("--q", 0.85, 1) }}>
-            <ParentalAdvisory />
-            <span className="font-['Space_Grotesk'] text-sm text-zinc-300">Spotify · Apple Music · YouTube · TikTok</span>
+          <div className="mt-8 flex w-full max-w-4xl flex-col items-center gap-6 md:mt-12 md:flex-row md:items-center md:gap-10" style={{ opacity: reveal("--q", 0.8, 1) }}>
+            <div className="flex shrink-0 flex-col items-center gap-3">
+              <ParentalAdvisory className="[zoom:1.5] md:[zoom:2.1]" />
+              <span className="font-['Space_Grotesk'] text-xs uppercase tracking-[0.2em] text-zinc-400">Spotify · Apple Music · YouTube · TikTok</span>
+            </div>
+            <div className="w-full text-left">
+              <p className="mb-2 font-['Oswald'] text-sm font-semibold uppercase tracking-[0.12em] text-[#FF4D4D]">Escucha a Vigora</p>
+              <SpotifyPlayer tall />
+            </div>
           </div>
-          <SpotifyPlayer className="mt-8 max-w-md md:hidden" />
         </div>
       </div>
     </section>
@@ -886,7 +965,7 @@ function ChapterOrigin({ index, setRef }) {
           <div className="flex w-full max-w-xl items-center gap-4">
             <span className="h-px flex-1 bg-gradient-to-r from-transparent to-white/60" />
             <h1 className="text-center font-['Jost'] text-[10px] font-light uppercase tracking-[0.42em] text-zinc-100 sm:text-xs md:text-sm">
-              Tu música, <span className="font-['UnifrakturMaguntia'] text-[1.5em] normal-case tracking-normal text-[#E10600]">nuestra producción</span>
+              Tu música, <span className="font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-[1.25em] text-[#E10600]">nuestra producción</span>
             </h1>
             <span className="h-px flex-1 bg-gradient-to-l from-transparent to-white/60" />
           </div>
@@ -945,7 +1024,7 @@ function ChapterOrigin({ index, setRef }) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" style={hero ? { opacity: "calc(1 - var(--c))" } : undefined} />
               <figcaption className="absolute inset-x-0 bottom-0 p-4" style={hero ? { opacity: "calc(1 - var(--c) * 3)" } : undefined}>
-                <span className="block font-['UnifrakturMaguntia'] text-xl text-white md:text-2xl">{card.label}</span>
+                <span className="block font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-xl text-white md:text-2xl">{card.label}</span>
               </figcaption>
             </figure>
           );
@@ -974,7 +1053,7 @@ function ChapterOrigin({ index, setRef }) {
               return (
                 <React.Fragment key={i}>
                   <span
-                    className={`inline-block ${em ? "font-['UnifrakturMaguntia'] text-[#FF4D4D]" : ""}`}
+                    className={`inline-block ${em ? "font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-[#FF4D4D]" : ""}`}
                     style={{
                       opacity: `calc(0.12 + 0.88 * ${t})`,
                       filter: `blur(calc((1 - ${t}) * 6px))`,
@@ -1003,7 +1082,7 @@ function Choice({ active, onClick, children }) {
       onClick={onClick}
       aria-pressed={active}
       className={`inline-flex items-center gap-1 rounded-full border px-3 py-1.5 font-['Space_Grotesk'] text-[11px] font-semibold transition-all duration-300 md:px-4 md:py-2 md:text-[13px] ${
-        active ? "border-[#E10600] bg-[#E10600] text-white" : "border-black/20 bg-white/50 text-black/80 hover:-translate-y-0.5 hover:border-black/50"
+        active ? "border-[#E10600] bg-[#E10600] text-white" : "border-white/15 bg-white/[0.04] text-zinc-200 hover:-translate-y-0.5 hover:border-white/40"
       }`}
     >
       {active && <Check className="h-3 w-3" strokeWidth={3} />}
@@ -1040,25 +1119,25 @@ function ChapterBooking({ setRef, booking, setBooking }) {
       </div>
 
       <div
-        className="no-scrollbar relative z-10 grid max-h-full w-full max-w-6xl overflow-y-auto rounded-[32px] bg-gradient-to-br from-white via-zinc-100 to-zinc-300 text-black shadow-[0_50px_140px_-30px_rgba(60,40,0,.55)] md:grid-cols-5"
+        className="no-scrollbar relative z-10 grid max-h-full w-full max-w-6xl overflow-y-auto rounded-[32px] border border-white/10 bg-[#0c0c0e]/95 text-white shadow-[0_50px_140px_-30px_rgba(0,0,0,.9)] backdrop-blur-md md:grid-cols-5"
         style={{
           transform: "perspective(1400px) translateY(calc((1 - var(--enter, 0)) * 120px)) rotateX(calc((1 - var(--enter, 0)) * 14deg))",
           opacity: "calc(var(--enter, 0) * 1.4 - 0.2)",
         }}
       >
-        <div className="relative flex flex-col justify-between gap-4 p-4 pb-3 md:col-span-2 md:border-r md:border-black/10 md:p-10">
+        <div className="relative flex flex-col justify-between gap-4 p-4 pb-3 md:col-span-2 md:border-r md:border-white/10 md:p-10">
           <h2 className="font-['Anton'] text-[clamp(1.7rem,5dvh,4.5rem)] uppercase leading-[0.92] text-[#E10600]">
             <SplitReveal text="¿Listo para sonar profesional?" from={0.55} to={1} />
           </h2>
           <div className="hidden md:block">
-            <p className="mb-2 font-['UnifrakturMaguntia'] text-lg text-black/60">Tu mensaje</p>
-            <div className="rounded-2xl rounded-bl-sm bg-[#d9fdd3] p-4 font-['Space_Grotesk'] text-sm leading-relaxed text-black/80 shadow-sm">{message}</div>
+            <p className="mb-2 font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-lg text-[#FF4D4D]">Tu mensaje</p>
+            <div className="rounded-2xl rounded-bl-sm bg-[#16261c] p-4 font-['Space_Grotesk'] text-sm leading-relaxed text-zinc-200 shadow-sm">{message}</div>
           </div>
           <a
             href={LINKS.instagram}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden items-center gap-2 font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.12em] text-black/70 transition-colors hover:text-black md:inline-flex"
+            className="hidden items-center gap-2 font-['Space_Grotesk'] text-sm font-bold uppercase tracking-[0.12em] text-zinc-400 transition-colors hover:text-white md:inline-flex"
           >
             <InstagramIcon className="h-5 w-5" /> {LINKS.instagramHandle}
           </a>
@@ -1071,7 +1150,7 @@ function ChapterBooking({ setRef, booking, setBooking }) {
             ["¿Cuándo?", BOOK_WHEN, (w) => when === w, (w) => set("when", w)],
           ].map(([label, opts, isOn, pick]) => (
             <fieldset key={label}>
-              <legend className="mb-1.5 font-['UnifrakturMaguntia'] text-base text-black/70 md:text-lg">{label}</legend>
+              <legend className="mb-1.5 font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-base text-[#FF4D4D] md:text-lg">{label}</legend>
               <div className="flex flex-wrap gap-1.5">
                 {opts.map((o) => (
                   <Choice key={o} active={isOn(o)} onClick={() => pick(o)}>
@@ -1080,12 +1159,12 @@ function ChapterBooking({ setRef, booking, setBooking }) {
                   </Choice>
                 ))}
                 {label === "Formato" && format === "Sesión por Horas" && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-black/20 bg-white/50 px-1">
-                    <button onClick={() => set("hours", Math.max(1, hours - 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-black/10" aria-label="Menos horas">
+                  <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.04] px-1 text-zinc-200">
+                    <button onClick={() => set("hours", Math.max(1, hours - 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10" aria-label="Menos horas">
                       <Minus className="h-3.5 w-3.5" />
                     </button>
                     <span className="min-w-[2.5ch] text-center font-['Space_Grotesk'] text-xs font-semibold">{hours}h</span>
-                    <button onClick={() => set("hours", Math.min(10, hours + 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-black/10" aria-label="Más horas">
+                    <button onClick={() => set("hours", Math.min(10, hours + 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10" aria-label="Más horas">
                       <Plus className="h-3.5 w-3.5" />
                     </button>
                   </span>
@@ -1099,7 +1178,7 @@ function ChapterBooking({ setRef, booking, setBooking }) {
             placeholder="Tu nombre artístico (opcional)"
             aria-label="Nombre artístico"
             maxLength={40}
-            className="w-full rounded-full border border-black/20 bg-white/70 px-4 py-2 font-['Space_Grotesk'] text-sm text-black placeholder:text-black/40 focus:border-black focus:outline-none md:py-2.5"
+            className="w-full rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 font-['Space_Grotesk'] text-sm text-white placeholder:text-zinc-500 focus:border-white/50 focus:outline-none md:py-2.5"
           />
           <button
             onClick={send}
@@ -1107,16 +1186,16 @@ function ChapterBooking({ setRef, booking, setBooking }) {
             data-cursor={ready ? "Enviar" : undefined}
             className="group relative mt-1 flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-[#E10600] px-5 py-3 font-['Anton'] text-base uppercase tracking-[0.08em] text-white transition-all disabled:cursor-not-allowed disabled:opacity-40 md:py-5 md:text-2xl"
           >
-            <span className="absolute inset-0 -translate-x-full bg-black transition-transform duration-700 ease-[cubic-bezier(.2,.7,.2,1)] group-enabled:group-hover:translate-x-0" />
-            <WhatsAppIcon className="relative h-6 w-6 text-white transition-colors duration-700 group-enabled:group-hover:text-[#25D366]" />
-            <span className="relative transition-colors duration-700 group-enabled:group-hover:text-white">{ready ? "Agendar por WhatsApp ahora" : "Elige al menos un servicio"}</span>
-            {ready && <ArrowRight className="relative h-5 w-5 transition-all duration-700 group-hover:translate-x-1" />}
+            <span className="absolute inset-0 -translate-x-full bg-white transition-transform duration-700 ease-[cubic-bezier(.2,.7,.2,1)] group-enabled:group-hover:translate-x-0" />
+            <WhatsAppIcon className="relative h-6 w-6 text-white transition-colors duration-700 group-enabled:group-hover:text-[#1aa34a]" />
+            <span className="relative transition-colors duration-700 group-enabled:group-hover:text-black">{ready ? "Agendar por WhatsApp ahora" : "Elige al menos un servicio"}</span>
+            {ready && <ArrowRight className="relative h-5 w-5 transition-all duration-700 group-hover:translate-x-1 group-hover:text-black" />}
           </button>
           <div className="flex items-center justify-between md:hidden">
-            <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.1em] text-black/70">
+            <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.1em] text-zinc-400">
               <InstagramIcon className="h-4 w-4" /> {LINKS.instagramHandle}
             </a>
-            <span className="font-['JetBrains_Mono'] text-[9px] uppercase text-black/40">© {new Date().getFullYear()} JV</span>
+            <span className="font-['JetBrains_Mono'] text-[9px] uppercase text-zinc-600">© {new Date().getFullYear()} JV</span>
           </div>
         </div>
       </div>
