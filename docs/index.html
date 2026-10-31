@@ -19,6 +19,7 @@ const { ArrowDown, ArrowRight, Check, Minus, Plus, Music, Volume2, VolumeX } = L
  *
  * Personaliza LINKS e IMAGES justo debajo.
  */
+const { createPortal } = ReactDOM;
 
 /* ═══════════════════════════════════════════════════════════════
    CONFIGURACIÓN
@@ -640,12 +641,42 @@ function ChapterStudio({ index, setRef }) {
     return () => v.removeEventListener("timeupdate", onTime);
   }, []);
 
-  const fullscreen = () => {
-    const v = main.current;
-    if (!v) return;
-    setMuted(false);
-    (v.requestFullscreen || v.webkitEnterFullscreen)?.call(v);
+  // "Ver en grande": reproductor a pantalla completa dentro de la propia página (funciona en todos los navegadores)
+  const [big, setBig] = useState(false);
+  const bigVideo = useRef(null);
+
+  const openBig = () => {
+    main.current?.pause();
+    setBig(true);
   };
+  const closeBig = () => {
+    const b = bigVideo.current, v = main.current;
+    if (b && v) v.currentTime = b.currentTime;
+    setBig(false);
+    v?.play().catch(() => {});
+  };
+
+  useEffect(() => {
+    if (!big) {
+      window.dispatchEvent(new CustomEvent("jv-video-sound", { detail: !muted }));
+      return;
+    }
+    const b = bigVideo.current;
+    if (b && main.current) {
+      b.currentTime = main.current.currentTime;
+      b.muted = false;
+      b.play().catch(() => {});
+    }
+    window.dispatchEvent(new CustomEvent("jv-video-sound", { detail: true })); // pausa la música de fondo
+    const html = document.documentElement;
+    html.style.overflow = "hidden";
+    const onKey = (e) => e.key === "Escape" && closeBig();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      html.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [big]);
 
   return (
     <section
@@ -658,6 +689,28 @@ function ChapterStudio({ index, setRef }) {
       style={{ "--v": 0, "--w": 0 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
+        {big &&
+          createPortal(
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Vídeo del estudio" onClick={closeBig}>
+            <video
+              ref={bigVideo}
+              src={VIDEO.src}
+              poster={VIDEO.poster}
+              playsInline
+              controls
+              loop
+              className="h-[100dvh] max-w-full object-contain md:h-[94dvh] md:rounded-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <button
+              onClick={closeBig}
+              className="absolute right-4 top-4 rounded-full border border-white/20 bg-black/70 px-4 py-2.5 font-['JetBrains_Mono'] text-[11px] uppercase tracking-[0.16em] text-white transition hover:bg-[#E10600] md:right-8 md:top-8"
+            >
+              Cerrar ✕
+            </button>
+          </div>,
+          document.body
+        )}
         {/* Fondo: el póster del vídeo desenfocado (más ligero que un vídeo con blur) */}
         <img
           src={VIDEO.poster}
@@ -738,7 +791,7 @@ function ChapterStudio({ index, setRef }) {
               <span className="relative h-px flex-1 overflow-hidden bg-white/15">
                 <span ref={bar} className="absolute inset-0 origin-left scale-x-0 bg-[#E10600]" />
               </span>
-              <button onClick={fullscreen} className="text-zinc-300 transition hover:text-white">
+              <button onClick={openBig} className="text-zinc-300 transition hover:text-white">
                 Ver en grande
               </button>
             </div>
