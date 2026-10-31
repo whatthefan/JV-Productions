@@ -1,10 +1,9 @@
 # JV Productions
 
-Web inmersiva del estudio de producción musical **JV Productions**. Intro cinematográfica, cursor propio,
-menú a pantalla completa y scroll con inercia. Cuatro capítulos fijados en pantalla cuya animación avanza y
-retrocede con el scroll: origen (logo entre la niebla con orbe de cromo líquido, abanico 3D del estudio y
-manifiesto), un interludio tipográfico, servicios (carrusel 3D horizontal), experiencia (un cabezal convierte
-la maqueta en master) y reserva rápida por WhatsApp que se abre como un círculo de luz.
+Web inmersiva del estudio de producción musical **JV Productions**, guiada por scroll y hecha solo con
+imágenes reales: el estudio entre la niebla, el abanico con las fotos del estudio, el vídeo del estudio montado
+(`public/videos/jv-studio-edit.mp4`), los 9 servicios explicados uno por pantalla, el lema "Desde la idea hasta
+el lanzamiento" y la reserva rápida por WhatsApp.
 
 ## Ver la demo sin instalar nada
 
