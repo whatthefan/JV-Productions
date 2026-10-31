@@ -1,34 +1,14 @@
 /**
- * JV PRODUCTIONS — Experiencia inmersiva guiada por scroll (v2)
- * Intro cinematográfica, cursor propio, menú a pantalla completa, scroll con inercia,
- * 4 capítulos fijados en pantalla + un interludio tipográfico.
+ * JV PRODUCTIONS — Web inmersiva guiada por scroll
+ * Progresión: el estudio entre la niebla → tus fotos → el vídeo del estudio → los servicios explicados →
+ * desde la idea hasta el lanzamiento → reserva por WhatsApp.
+ * Todo con imágenes reales, etalonadas con la misma luz cobalto/ámbar del estudio.
  * Stack: React + Tailwind CSS + lucide-react
  *
  * Personaliza LINKS e IMAGES justo debajo.
  */
 import React, { useState, useEffect, useRef, useContext, createContext } from "react";
-import {
-  Crown,
-  Play,
-  Pause,
-  SkipForward,
-  SlidersVertical,
-  SlidersHorizontal,
-  MonitorPlay,
-  Music,
-  NotebookPen,
-  Image as ImageIcon,
-  Mic,
-  Clapperboard,
-  Globe,
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  Minus,
-  Plus,
-  Disc3,
-  Rocket,
-} from "lucide-react";
+import { ArrowRight, Check, Minus, Plus, Volume2, VolumeX } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════════
    CONFIGURACIÓN
@@ -65,31 +45,23 @@ const IMAGES = {
   pxCamera: "img/stock/px-camera.jpg",
 };
 
+const VIDEO = {
+  // Montaje del estudio (etalonado, con cortes y cierre con logo) hecho a partir de tu vídeo original
+  src: "videos/jv-studio-edit.mp4",
+  poster: "videos/jv-studio-poster.jpg",
+};
+
 /* ═══════════════════════════════════════════════════════════════
    DATOS
    ═══════════════════════════════════════════════════════════════ */
 
 // Orden de las secciones en la página
-const S = { origin: 0, interlude: 1, services: 2, experience: 3, booking: 4 };
-
-const MENU = [
-  { label: "Origen", sub: "El estudio", to: S.origin, img: IMAGES.studioWall },
-  { label: "Servicios", sub: "360° Music Factory", to: S.services, img: IMAGES.heroMic },
-  { label: "Experiencia", sub: "De maqueta a master", to: S.experience, img: IMAGES.consoleAmber },
-  { label: "Agendar", sub: "Reserva por WhatsApp", to: S.booking, img: IMAGES.crowdGold },
-];
-
-// Añade `src: "beats/archivo.mp3"` para audio real; sin src el reproductor se simula.
-const BEATS = [
-  { title: "Medianoche en el Bunker", genre: "Trap", bpm: 142, dur: 174 },
-  { title: "Perreo de Cromo", genre: "Reggaetón", bpm: 94, dur: 186 },
-  { title: "Luz Ámbar", genre: "R&B", bpm: 78, dur: 201 },
-];
+const S = { origin: 0, studio: 1, services: 2, statement: 3, booking: 4 };
 
 const FAN = [
   /* FOTO ESTUDIO 1: DAW */
   { src: IMAGES.setup, label: "El Setup", pos: "50% 38%" },
-  /* FOTO ESTUDIO 2: EN LA ZONA (se expande) */
+  /* FOTO ESTUDIO 2: EN LA ZONA (crece hasta panel) */
   { src: IMAGES.zone, label: "En la Zona", pos: "50% 30%" },
   /* FOTO ESTUDIO 3: NIGHT VIBE */
   { src: IMAGES.night, label: "Night Vibe", pos: "50% 45%" },
@@ -111,46 +83,97 @@ const MANIFESTO = [
   "pone", "en", "el", { em: "mapa." }, { img: IMAGES.pxRapper },
 ];
 
-const INTERLUDE_A = ["Trap", { img: IMAGES.zone }, "Reggaetón", { img: IMAGES.pxRapper }, "R&B", { img: IMAGES.night }, "Drill", { img: IMAGES.pxMic }];
-const INTERLUDE_B = ["sonido de élite", "·", "hecho de noche", "·", "con la corona puesta", "·"];
-
-const SERVICES = [
-  { id: "produccion", cat: 0, title: "Producción Musical Completa", icon: SlidersVertical, book: "Producción Completa", img: "img/stock/sv-produccion.jpg", desc: "Dirección artística y creación integral de tu tema desde cero." },
-  { id: "beats", cat: 0, title: "Creación de Beats Personalizados", icon: Music, book: "Beat a Medida", img: "img/stock/sv-beats.jpg", desc: "Instrumentales exclusivas a medida de tu flow. Toca los pads." },
-  { id: "voces", cat: 0, title: "Grabación de Voces por Horas", icon: Mic, book: "Grabar Voces", img: "img/stock/sv-voces.jpg", desc: "Cabina tratada, previos de gama alta y dirección vocal en sesión." },
-  { id: "mezcla", cat: 0, title: "Mezcla y Mastering", icon: SlidersHorizontal, book: "Mezcla / Master", img: "img/stock/sv-mezcla.jpg", desc: "Sonido comercial y cristalino. Mueve los faders." },
-  { id: "letras", cat: 1, title: "Composición de Letras", icon: NotebookPen, book: "Letras", img: "img/stock/sv-letras.jpg", desc: "Co-writing, melodías pegadizas y barras con identidad propia." },
-  { id: "portadas", cat: 1, title: "Diseño de Portadas", icon: ImageIcon, book: "Portada", img: "img/stock/sv-portadas.jpg", desc: "Cover art con estética de sello discográfico. Toca la portada." },
-  { id: "visualizers", cat: 1, title: "Visualizers", icon: MonitorPlay, book: "Videoclip / Visuals", img: "img/stock/sv-visualizers.jpg", desc: "Piezas visuales hipnóticas para YouTube y redes." },
-  { id: "videoclips", cat: 1, title: "Videoclips", icon: Clapperboard, book: "Videoclip / Visuals", img: "img/stock/sv-videoclips.jpg", desc: "Producción cinematográfica callejera, nocturna y de alto impacto." },
-  { id: "distribucion", cat: 2, title: "Distribución Musical", icon: Globe, book: "Distribución", img: "img/stock/sv-distribucion.jpg", desc: "Subida, regalías y posicionamiento en Spotify, Apple Music y todas las tiendas." },
+const STUDIO_LINES = [
+  "Cabina tratada y equipo profesional.",
+  "Producción, grabación y mezcla en el mismo sitio.",
+  "Tu tema, de la primera idea al lanzamiento.",
 ];
-// Palabra gigante de fondo según el bloque de servicios que se está viendo
-const CATEGORY_WORDS = ["Sonido", "Imagen", "Mundo"];
 
-const STEPS = [
-  { icon: Disc3, short: "Idea & Beat", desc: "Fijamos referencias y construimos la instrumental a tu medida." },
-  { icon: Mic, short: "Cabina", desc: "Tomas, dobles y ad-libs dirigidos hasta que suene a disco." },
-  { icon: SlidersHorizontal, short: "Mezcla & Arte", desc: "Master comercial + portada, visualizer o videoclip." },
-  { icon: Rocket, short: "Lanzamiento", desc: "Distribución global y regalías. Tú solo suenas." },
+// Los 9 servicios del cartel, explicados. `book` es la opción que se marca en la reserva.
+const SERVICES = [
+  {
+    title: "Producción Musical Completa",
+    book: "Producción Completa",
+    img: "img/stock/sv-produccion.jpg",
+    pos: "50% 40%",
+    text: "Nos encargamos del tema entero. Tú llegas con la idea y te vas con una canción lista para sacar.",
+    includes: ["Dirección artística y referencias", "Instrumental, arreglos y grabación", "Mezcla y master comercial"],
+  },
+  {
+    title: "Creación de Beats Personalizados",
+    book: "Beat a Medida",
+    img: "img/stock/sv-beats.jpg",
+    pos: "50% 40%",
+    text: "Instrumentales exclusivas hechas desde cero para tu voz y tu estilo: trap, reggaetón, R&B o drill.",
+    includes: ["Beat exclusivo a tu medida", "Stems separados por pistas", "Ajustes hasta que encaje con tu flow"],
+  },
+  {
+    title: "Grabación de Voces por Horas",
+    book: "Grabar Voces",
+    img: "img/stock/sv-voces.jpg",
+    pos: "50% 35%",
+    text: "Reserva las horas que necesites en cabina tratada. Te dirigimos la sesión para sacar tu mejor toma.",
+    includes: ["Ingeniero durante toda la sesión", "Dobles, coros y ad-libs", "Archivos limpios al terminar"],
+  },
+  {
+    title: "Mezcla y Mastering",
+    book: "Mezcla / Master",
+    img: "img/stock/sv-mezcla.jpg",
+    pos: "50% 50%",
+    text: "Equilibramos cada pista y llevamos tu tema al volumen y la claridad de las plataformas, sin perder pegada.",
+    includes: ["Mezcla de voces e instrumental", "Master listo para streaming", "Versiones para escuchar y comparar"],
+  },
+  {
+    title: "Composición de Letras",
+    book: "Letras",
+    img: "img/stock/sv-letras.jpg",
+    pos: "50% 30%",
+    text: "Escribimos contigo o pulimos lo que ya tienes: estructura, estribillos que se quedan y barras con identidad.",
+    includes: ["Co-writing en sesión", "Melodías y topline", "Estructura completa del tema"],
+  },
+  {
+    title: "Diseño de Portadas",
+    book: "Portada",
+    img: "img/stock/sv-portadas.jpg",
+    pos: "50% 50%",
+    text: "Portadas con estética de sello para tus singles y álbumes, preparadas para las plataformas y las redes.",
+    includes: ["Concepto y diseño a medida", "Formatos para Spotify y Apple Music", "Versión para redes sociales"],
+  },
+  {
+    title: "Visualizers",
+    book: "Videoclip / Visuals",
+    img: "img/stock/sv-visualizers.jpg",
+    pos: "50% 50%",
+    text: "Piezas visuales en bucle que acompañan tu tema en YouTube, Spotify y redes mientras suena.",
+    includes: ["Visualizer para YouTube", "Canvas para Spotify", "Cortes verticales para redes"],
+  },
+  {
+    title: "Videoclips",
+    book: "Videoclip / Visuals",
+    img: "img/stock/sv-videoclips.jpg",
+    pos: "50% 40%",
+    text: "Producción audiovisual completa con estética urbana y cinematográfica, de la idea a la edición final.",
+    includes: ["Idea, guion y localizaciones", "Rodaje", "Edición y etalonaje"],
+  },
+  {
+    title: "Distribución Musical",
+    book: "Distribución",
+    img: "img/stock/sv-distribucion.jpg",
+    pos: "50% 50%",
+    text: "Subimos tu música a Spotify, Apple Music, YouTube Music, TikTok y el resto de tiendas, y te ayudamos con las regalías.",
+    includes: ["Subida a todas las plataformas", "Gestión de regalías", "Planificación del lanzamiento"],
+  },
 ];
 
 const BOOK_SERVICES = ["Grabar Voces", "Producción Completa", "Beat a Medida", "Mezcla / Master", "Videoclip / Visuals", "Letras", "Portada", "Distribución"];
 const BOOK_FORMATS = ["Sesión por Horas", "Proyecto Completo", "Pack Lanzamiento"];
 const BOOK_WHEN = ["Esta semana", "Próxima semana", "Urgente"];
 
-const LYRICS = [
-  "Desde abajo con la corona puesta,",
-  "la noche escribe lo que el día no contesta.",
-  "Cromo en la voz, oro en la libreta,",
-  "cada barra es una puerta que se abre completa.",
-];
-
 /* ═══════════════════════════════════════════════════════════════
    MOTOR DE SCROLL
    Cada sección recibe, suavizadas con inercia:
-   --p (0→1 mientras está fijada), --enter (0→1 al entrar) y --t (0→1 mientras cruza la pantalla).
-   En la raíz del documento: --mx / --my (ratón, -1→1) y --vel (velocidad de scroll, -1→1).
+   --p (0→1 mientras está fijada) y --enter (0→1 al entrar).
+   En la raíz del documento: --mx / --my (ratón, -1→1) para el parallax.
    ═══════════════════════════════════════════════════════════════ */
 
 const clamp01 = (x) => Math.min(1, Math.max(0, x));
@@ -224,18 +247,6 @@ html, body { background: #050505; margin: 0; }
   animation: jv-grain 1.2s steps(6) infinite;
 }
 
-/* Cursor propio (solo ratón) */
-@media (pointer: fine) { .jv-root, .jv-root * { cursor: none !important; } }
-.jv-cursor-ring {
-  position: fixed; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 9999px;
-  border: 1px solid rgba(226,232,240,.55); display: grid; place-items: center; pointer-events: none; z-index: 200;
-  transition: width .35s cubic-bezier(.2,.7,.2,1), height .35s cubic-bezier(.2,.7,.2,1), margin .35s cubic-bezier(.2,.7,.2,1), background-color .3s, border-color .3s, opacity .3s;
-}
-.jv-cursor-ring[data-state="hover"] { width: 58px; height: 58px; margin: -29px 0 0 -29px; border-color: #D4AF37; background: rgba(212,175,55,.08); }
-.jv-cursor-ring[data-state="label"] { width: 92px; height: 92px; margin: -46px 0 0 -46px; border-color: #D4AF37; background: #D4AF37; }
-.jv-cursor-ring > span { opacity: 0; transition: opacity .2s; font: 600 10px 'Space Grotesk', sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #050505; }
-.jv-cursor-ring[data-state="label"] > span { opacity: 1; }
-.jv-cursor-dot { position: fixed; left: 0; top: 0; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 9999px; background: #fff; pointer-events: none; z-index: 201; mix-blend-mode: difference; }
 
 @keyframes jv-grain { 0%{transform:translate(0,0)} 25%{transform:translate(-3%,2%)} 50%{transform:translate(2%,-4%)} 75%{transform:translate(-4%,-1%)} 100%{transform:translate(0,0)} }
 @keyframes jv-shine { from { background-position: 250% 0 } to { background-position: -250% 0 } }
@@ -287,12 +298,6 @@ const InstagramIcon = ({ className = "" }) => (
   </svg>
 );
 
-const CursorIcon = ({ className = "" }) => (
-  <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-    <path d="M4 3l7.5 18 2.4-7.1L21 11.5z" fill="#D4AF37" stroke="#050505" strokeWidth="1.5" strokeLinejoin="round" />
-  </svg>
-);
-
 function ParentalAdvisory({ className = "" }) {
   return (
     <div
@@ -338,37 +343,6 @@ function Fog({ seed = 3, tint = "0.80 0.84 0.95", className = "", style }) {
   );
 }
 
-function Pill({ children, className = "", style }) {
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-white/15 bg-white/[0.06] px-3 py-1.5 font-['Space_Grotesk'] text-[11px] font-medium tracking-wide text-zinc-100 shadow-[0_8px_30px_rgba(0,0,0,.5)] backdrop-blur-xl md:text-xs ${className}`}
-      style={style}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** El contenido se desplaza un poco hacia el puntero (botones "magnéticos") */
-function Magnetic({ children, strength = 0.3, className = "" }) {
-  const ref = useRef(null);
-  return (
-    <span
-      ref={ref}
-      className={`inline-block transition-transform duration-300 ease-out ${className}`}
-      onPointerMove={(e) => {
-        if (e.pointerType !== "mouse") return;
-        const r = ref.current.getBoundingClientRect();
-        ref.current.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * strength}px, ${(e.clientY - r.top - r.height / 2) * strength}px)`;
-      }}
-      onPointerLeave={() => (ref.current.style.transform = "")}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** Texto que sube letra a letra desde una máscara, guiado por una variable de scroll */
 function SplitReveal({ text, v = "--enter", from = 0.3, to = 0.9, className = "", letterClass = "" }) {
   const words = text.split(" ");
   const total = text.replace(/ /g, "").length;
@@ -397,49 +371,9 @@ function SplitReveal({ text, v = "--enter", from = 0.3, to = 0.9, className = ""
   );
 }
 
-function EqBars({ playing, count = 40, className = "" }) {
-  return (
-    <div className={`jv-eq flex items-end gap-[2px] ${playing ? "" : "is-paused"} ${className}`} aria-hidden="true">
-      {Array.from({ length: count }).map((_, i) => (
-        <span
-          key={i}
-          className="h-full flex-1 rounded-full bg-gradient-to-t from-[#D4AF37] via-zinc-200 to-white"
-          style={{ animationDuration: `${0.55 + ((i * 37) % 10) / 14}s`, animationDelay: `-${(i * 0.09).toFixed(2)}s` }}
-        />
-      ))}
-    </div>
-  );
-}
-
-const fmt = (sec) => {
-  const s = Math.max(0, Math.floor(sec));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
-};
-
-// Sonido corto para los pads (Web Audio, sin archivos)
-let audioCtx;
-function blip(i) {
-  try {
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const t = audioCtx.currentTime;
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    const kick = i % 4 === 0;
-    o.type = kick ? "sine" : "triangle";
-    o.frequency.setValueAtTime(kick ? 150 : [0, 262, 330, 392, 0, 440, 523, 659][i], t);
-    if (kick) o.frequency.exponentialRampToValueAtTime(45, t + 0.25);
-    g.gain.setValueAtTime(0.28, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
-    o.connect(g).connect(audioCtx.destination);
-    o.start(t);
-    o.stop(t + 0.32);
-  } catch (e) {
-    /* sin audio disponible */
-  }
-}
 
 /* ═══════════════════════════════════════════════════════════════
-   INTRO + CURSOR + NAVEGACIÓN + REPRODUCTOR
+   INTRO + NAVEGACIÓN
    ═══════════════════════════════════════════════════════════════ */
 
 /** Telón de entrada: la línea dorada se abre, aparece el logo y la pantalla se parte en dos */
@@ -488,232 +422,302 @@ function Intro({ onDone }) {
   );
 }
 
-/** Punto + anillo que sigue al ratón; muestra el texto de data-cursor="..." */
-function Cursor() {
-  const dot = useRef(null);
-  const ring = useRef(null);
-  const label = useRef(null);
-  const fine = useMedia("(pointer: fine)");
-
-  useEffect(() => {
-    if (!fine) return;
-    let x = -100, y = -100, rx = -100, ry = -100, raf = 0;
-    const move = (e) => {
-      x = e.clientX;
-      y = e.clientY;
-      const t = e.target.closest ? e.target.closest("[data-cursor]") : null;
-      const interactive = e.target.closest ? e.target.closest("a,button,input,[role='button'],[role='slider']") : null;
-      const text = t ? t.getAttribute("data-cursor") : "";
-      if (label.current.textContent !== text) label.current.textContent = text;
-      ring.current.dataset.state = text ? "label" : interactive ? "hover" : "";
-    };
-    const leave = () => (ring.current.style.opacity = dot.current.style.opacity = "0");
-    const enter = () => (ring.current.style.opacity = dot.current.style.opacity = "1");
-    const loop = () => {
-      rx += (x - rx) * 0.17;
-      ry += (y - ry) * 0.17;
-      dot.current.style.transform = `translate3d(${x}px,${y}px,0)`;
-      ring.current.style.transform = `translate3d(${rx}px,${ry}px,0)`;
-      raf = requestAnimationFrame(loop);
-    };
-    window.addEventListener("pointermove", move, { passive: true });
-    document.documentElement.addEventListener("mouseleave", leave);
-    document.documentElement.addEventListener("mouseenter", enter);
-    raf = requestAnimationFrame(loop);
-    return () => {
-      cancelAnimationFrame(raf);
-      window.removeEventListener("pointermove", move);
-      document.documentElement.removeEventListener("mouseleave", leave);
-      document.documentElement.removeEventListener("mouseenter", enter);
-    };
-  }, [fine]);
-
-  if (!fine) return null;
+/** Foto real etalonada con la luz del estudio: contraste, sombras cobalto, luces ámbar y viñeta */
+function Photo({ src, pos = "50% 50%", className = "relative", imgClassName = "", imgStyle, children }) {
   return (
-    <>
-      <div ref={ring} className="jv-cursor-ring" aria-hidden="true">
-        <span ref={label} />
-      </div>
-      <div ref={dot} className="jv-cursor-dot" aria-hidden="true" />
-    </>
+    <div className={`overflow-hidden ${className}`}>
+      <img
+        src={src}
+        alt=""
+        className={`absolute inset-0 h-full w-full object-cover ${imgClassName}`}
+        style={{ objectPosition: pos, filter: "contrast(1.08) saturate(1.12) brightness(.86)", ...imgStyle }}
+      />
+      <div className="absolute inset-0 mix-blend-soft-light" style={{ background: "linear-gradient(160deg, rgba(29,78,216,.55), rgba(109,40,217,.2) 50%, rgba(245,158,11,.45))" }} />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,transparent_40%,rgba(5,5,5,.75)_100%)]" />
+      {children}
+    </div>
   );
 }
 
-function Nav({ menuOpen, setMenuOpen, goTo }) {
+function Nav({ goTo, light }) {
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex items-center justify-between px-4 py-4 md:px-10 md:py-7">
-      <button onClick={() => goTo(S.origin)} className="pointer-events-auto flex items-center gap-2.5 mix-blend-difference" aria-label="Ir al inicio">
-        <Crown className="h-4 w-4 text-white" strokeWidth={1.5} />
-        <span className="font-['Jost'] text-[11px] font-light uppercase tracking-[0.5em] text-white">
-          JV<span className="hidden sm:inline"> Productions</span>
+      <button onClick={() => goTo(S.origin)} className="pointer-events-auto flex items-center gap-3" aria-label="Ir al inicio">
+        <Logo className="h-9 md:h-11" />
+        <span className={`hidden font-['Jost'] text-[11px] font-light uppercase tracking-[0.5em] transition-colors duration-500 sm:inline ${light ? "text-black/70" : "text-white/80"}`}>
+          JV Productions
         </span>
       </button>
-      <div className="pointer-events-auto flex items-center gap-2 md:gap-3">
-        <Magnetic>
-          <button
-            onClick={() => goTo(S.booking)}
-            className="group relative overflow-hidden rounded-full border border-white/20 bg-black/40 px-4 py-2.5 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] text-white backdrop-blur-md md:px-6 md:py-3"
-          >
-            <span className="absolute inset-0 translate-y-full rounded-full bg-[#D4AF37] transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-y-0" />
-            <span className="relative transition-colors duration-500 group-hover:text-black">Agendar</span>
-          </button>
-        </Magnetic>
-        <Magnetic>
-          <button
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-label={menuOpen ? "Cerrar menú" : "Abrir menú"}
-            aria-expanded={menuOpen}
-            className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 backdrop-blur-md md:h-11 md:w-11"
-          >
-            <span className="relative block h-3 w-5">
-              <span className={`absolute left-0 h-px w-5 bg-white transition-all duration-500 ${menuOpen ? "top-1.5 rotate-45" : "top-0"}`} />
-              <span className={`absolute left-0 h-px bg-white transition-all duration-500 ${menuOpen ? "top-1.5 w-5 -rotate-45" : "top-3 w-3"}`} />
-            </span>
-          </button>
-        </Magnetic>
-      </div>
+      <button
+        onClick={() => goTo(S.booking)}
+        className={`pointer-events-auto group relative overflow-hidden rounded-full border px-5 py-2.5 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-colors duration-500 md:px-7 md:py-3 ${
+          light ? "border-black/20 bg-white/40 text-black" : "border-white/20 bg-black/40 text-white"
+        }`}
+      >
+        <span className="absolute inset-0 translate-y-full rounded-full bg-[#D4AF37] transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-y-0" />
+        <span className="relative transition-colors duration-500 group-hover:text-black">Agendar sesión</span>
+      </button>
     </header>
   );
 }
 
-/** Menú a pantalla completa: se abre como un círculo desde el botón */
-function MenuOverlay({ open, onClose, goTo }) {
-  const [hover, setHover] = useState(0);
+/* ═══════════════════════════════════════════════════════════════
+   CAPÍTULO 02 — EL ESTUDIO (el vídeo montado crece y su luz llena la pantalla)
+   ═══════════════════════════════════════════════════════════════ */
+
+function ChapterStudio({ index, setRef }) {
+  const root = useRef(null);
+  const main = useRef(null);
+  const ambient = useRef(null);
+  const [muted, setMuted] = useState(true);
+  const [hasAudio, setHasAudio] = useState(false);
+
+  useProgress(index, (p) => {
+    const el = root.current;
+    if (!el) return;
+    el.style.setProperty("--v", seg(p, 0, 0.45).toFixed(4)); // el vídeo crece
+    el.style.setProperty("--w", seg(p, 0.25, 0.85).toFixed(4)); // aparecen los textos
+  });
+
+  // React no sincroniza el atributo muted: se aplica a mano
+  useEffect(() => {
+    if (main.current) main.current.muted = muted;
+  }, [muted]);
+
+  // Solo reproduce mientras la sección está a la vista
+  useEffect(() => {
+    const vids = [main.current, ambient.current];
+    const io = new IntersectionObserver(([e]) => vids.forEach((v) => v && (e.isIntersecting ? v.play().catch(() => {}) : v.pause())), { threshold: 0.05 });
+    io.observe(root.current);
+    return () => io.disconnect();
+  }, []);
+
   return (
-    <div
-      className="fixed inset-0 z-[60] bg-[#070708] text-white"
-      style={{
-        clipPath: open ? "circle(150% at calc(100% - 44px) 44px)" : "circle(0% at calc(100% - 44px) 44px)",
-        transition: "clip-path 1s cubic-bezier(.76,0,.24,1)",
-        pointerEvents: open ? "auto" : "none",
+    <section
+      ref={(el) => {
+        root.current = el;
+        setRef(el);
       }}
-      aria-hidden={!open}
+      aria-label="El estudio"
+      className="relative h-[300vh]"
+      style={{ "--v": 0, "--w": 0 }}
     >
-      {MENU.map((m, i) => (
-        <img
-          key={m.label}
-          src={m.img}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover transition-all duration-1000"
-          style={{ opacity: hover === i ? 0.35 : 0, transform: hover === i ? "scale(1)" : "scale(1.05)" }}
+      <div className="sticky top-0 h-[100dvh] overflow-hidden">
+        {/* La luz del propio vídeo, desenfocada, llena el fondo */}
+        <video
+          ref={ambient}
+          src={VIDEO.src}
+          muted
+          autoPlay
+          loop
+          playsInline
+          preload="metadata"
+          aria-hidden="true"
+          className="absolute inset-0 h-full w-full scale-125 object-cover blur-[60px]"
+          style={{ opacity: "calc(0.15 + var(--v) * 0.4)" }}
         />
-      ))}
-      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/70" />
-      <nav className="relative flex h-full flex-col justify-center px-6 md:px-20" aria-label="Menú">
-        {MENU.map((m, i) => (
-          <button
-            key={m.label}
-            onMouseEnter={() => setHover(i)}
-            onFocus={() => setHover(i)}
-            onClick={() => {
-              onClose();
-              setTimeout(() => goTo(m.to), 350);
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-[#050505]/30" />
+
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center gap-6 px-5 pb-6 pt-24 md:flex-row md:justify-between md:gap-16 md:px-12">
+          {/* Texto */}
+          <div className="w-full max-w-md shrink-0 md:order-1">
+            <p className="font-['Instrument_Serif'] text-xl italic text-[#E9CF7A] md:text-2xl" style={{ opacity: reveal("--enter", 0.5, 0.9) }}>
+              El estudio
+            </p>
+            <h2 className="mt-1 font-['Jost'] text-[clamp(1.8rem,4.6vw,4.2rem)] font-extralight uppercase leading-[1.02] tracking-[0.04em] text-white">
+              <SplitReveal text="Donde nace tu sonido" from={0.55} to={1} letterClass="jv-chrome" />
+            </h2>
+            <ul className="mt-4 hidden space-y-3 md:mt-8 md:block">
+              {STUDIO_LINES.map((l, i) => {
+                const t = reveal("--w", (i * 0.25).toFixed(2), (i * 0.25 + 0.35).toFixed(2));
+                return (
+                  <li key={l} className="flex items-start gap-3 font-['Space_Grotesk'] text-base text-zinc-300" style={{ opacity: t, transform: `translateY(calc((1 - ${t}) * 16px))` }}>
+                    <span className="mt-[11px] h-px w-6 shrink-0 bg-[#D4AF37]" />
+                    {l}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+
+          {/* Vídeo montado en formato vertical */}
+          <div
+            className="relative aspect-[9/16] h-[min(62dvh,560px)] shrink-0 overflow-hidden rounded-[28px] border border-white/15 shadow-[0_60px_120px_-30px_rgba(0,0,0,.95)] md:order-2 md:h-[min(80dvh,760px)]"
+            style={{
+              transform: "perspective(1400px) translateY(calc((1 - var(--v)) * 14dvh)) rotateX(calc((1 - var(--v)) * 12deg)) scale(calc(0.86 + var(--v) * 0.14))",
+              opacity: "calc(0.3 + var(--v) * 0.7)",
             }}
-            tabIndex={open ? 0 : -1}
-            data-cursor="Ir"
-            className="group flex items-baseline gap-4 overflow-hidden py-1 text-left md:gap-8"
           >
-            <span
-              className="block font-['Jost'] text-[clamp(2.4rem,8vw,7rem)] font-extralight uppercase leading-[1.02] tracking-[0.02em] transition-[transform,color] duration-700"
-              style={{
-                transform: open ? "translateY(0)" : "translateY(110%)",
-                transitionDelay: open ? `${300 + i * 80}ms` : "0ms",
-                color: hover === i ? "#fff" : "rgba(255,255,255,.35)",
+            <video
+              ref={main}
+              src={VIDEO.src}
+              poster={VIDEO.poster}
+              muted
+              autoPlay
+              loop
+              playsInline
+              preload="metadata"
+              onLoadedMetadata={(e) => {
+                const v = e.currentTarget;
+                setHasAudio(Boolean(v.mozHasAudio || v.webkitAudioDecodedByteCount || (v.audioTracks && v.audioTracks.length)));
               }}
-            >
-              {m.label}
-            </span>
-            <span
-              className="hidden font-['Instrument_Serif'] text-2xl italic text-[#D4AF37] transition-all duration-500 md:inline"
-              style={{ opacity: hover === i && open ? 1 : 0, transform: hover === i ? "translateX(0)" : "translateX(-12px)" }}
-            >
-              {m.sub}
-            </span>
-          </button>
-        ))}
-        <div
-          className="mt-10 flex flex-wrap items-center gap-6 font-['Space_Grotesk'] text-xs font-semibold uppercase tracking-[0.18em] text-zinc-400 transition-opacity duration-700"
-          style={{ opacity: open ? 1 : 0, transitionDelay: open ? "700ms" : "0ms" }}
-        >
-          <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-white" tabIndex={open ? 0 : -1}>
-            <InstagramIcon className="h-4 w-4" /> {LINKS.instagramHandle}
-          </a>
-          <a href={`https://wa.me/${LINKS.whatsappNumber}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-white" tabIndex={open ? 0 : -1}>
-            <WhatsAppIcon className="h-4 w-4" /> WhatsApp
-          </a>
+              className="h-full w-full object-cover"
+            />
+            {hasAudio && (
+              <button
+                onClick={() => setMuted((m) => !m)}
+                className="absolute bottom-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-black/50 text-white backdrop-blur-md"
+                aria-label={muted ? "Activar sonido" : "Silenciar"}
+              >
+                {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+              </button>
+            )}
+          </div>
         </div>
-      </nav>
-    </div>
+      </div>
+    </section>
   );
 }
 
-/** Reproductor: disco con texto giratorio; al pasar el ratón muestra el beat */
-function FloatingPlayer({ hidden }) {
-  const [idx, setIdx] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [pos, setPos] = useState(0);
-  const audioRef = useRef(null);
-  const beat = BEATS[idx];
+/* ═══════════════════════════════════════════════════════════════
+   CAPÍTULO 03 — SERVICIOS (uno por pantalla: cada foto cubre a la anterior al bajar)
+   ═══════════════════════════════════════════════════════════════ */
 
-  useEffect(() => {
-    if (!playing || beat.src) return;
-    const t = setInterval(() => setPos((p) => (p + 0.25 >= beat.dur ? 0 : p + 0.25)), 250);
-    return () => clearInterval(t);
-  }, [playing, beat]);
+function ChapterServices({ index, setRef, onBook }) {
+  const root = useRef(null);
+  const [cur, setCur] = useState(0);
+  const n = SERVICES.length;
 
-  useEffect(() => {
-    const a = audioRef.current;
-    if (!a || !beat.src) return;
-    if (playing) a.play().catch(() => setPlaying(false));
-    else a.pause();
-  }, [playing, idx]);
+  useProgress(index, (p) => {
+    const f = clamp(p * (n - 1) * 1.08, 0, n - 1); // deja un respiro al final
+    root.current?.style.setProperty("--f", f.toFixed(4));
+    const c = Math.round(f);
+    setCur((x) => (x === c ? x : c));
+  });
 
-  const next = () => {
-    setIdx((i) => (i + 1) % BEATS.length);
-    setPos(0);
-    setPlaying(true);
+  const jump = (i) => {
+    const el = root.current;
+    if (!el) return;
+    const total = el.offsetHeight - window.innerHeight;
+    window.scrollTo({ top: el.offsetTop + (total * i) / ((n - 1) * 1.08), behavior: "smooth" });
   };
 
   return (
-    <div
-      className={`group fixed bottom-3 left-3 z-40 flex items-center transition-all duration-700 md:bottom-6 md:left-6 ${hidden ? "pointer-events-none translate-y-8 opacity-0" : "opacity-100"}`}
+    <section
+      ref={(el) => {
+        root.current = el;
+        setRef(el);
+      }}
+      aria-label="Servicios"
+      className="relative"
+      style={{ height: `${100 + n * 80}vh`, "--f": 0 }}
     >
-      {beat.src && <audio ref={audioRef} src={beat.src} onTimeUpdate={(e) => setPos(e.currentTarget.currentTime)} onEnded={next} />}
-      <button
-        onClick={() => setPlaying((p) => !p)}
-        data-cursor={playing ? "Pausa" : "Play"}
-        className="relative grid h-16 w-16 shrink-0 place-items-center md:h-[76px] md:w-[76px]"
-        aria-label={playing ? "Pausar beat" : "Escuchar beat"}
-      >
-        <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" style={{ animation: `jv-spin ${playing ? 6 : 16}s linear infinite` }} aria-hidden="true">
-          <defs>
-            <path id="jv-ring" d="M50,50 m-40,0 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0" />
-          </defs>
-          <text fill="#E2E8F0" fontSize="9.6" letterSpacing="3.2" style={{ fontFamily: "JetBrains Mono, monospace" }}>
-            <textPath href="#jv-ring">JV BEATS · ESCUCHAR · JV BEATS · ESCUCHAR ·</textPath>
-          </text>
-        </svg>
-        <span className="relative grid h-9 w-9 place-items-center rounded-full bg-[linear-gradient(180deg,#fff,#a3abb8)] text-black shadow-[0_6px_20px_rgba(0,0,0,.6)] transition-transform duration-300 group-hover:scale-110 md:h-11 md:w-11">
-          {playing ? <Pause className="h-4 w-4" fill="currentColor" /> : <Play className="h-4 w-4 translate-x-[1px]" fill="currentColor" />}
-        </span>
-      </button>
-      <div
-        className={`ml-1 hidden items-center gap-3 overflow-hidden rounded-full border border-white/10 bg-black/60 py-2 pl-4 pr-3 backdrop-blur-md transition-all duration-500 sm:flex ${
-          playing ? "max-w-[340px] opacity-100" : "max-w-0 border-transparent px-0 opacity-0 group-hover:max-w-[340px] group-hover:border-white/10 group-hover:pl-4 group-hover:pr-3 group-hover:opacity-100"
-        }`}
-      >
-        <div className="w-36 whitespace-nowrap">
-          <p className="truncate font-['Space_Grotesk'] text-xs font-semibold text-white">{beat.title}</p>
-          <p className="font-['Instrument_Serif'] text-[13px] italic text-zinc-400">
-            {beat.genre} · {fmt(pos)}
-          </p>
-        </div>
-        <EqBars playing={playing} count={10} className="h-5 w-12" />
-        <button onClick={next} className="text-zinc-400 transition-colors hover:text-white" aria-label="Siguiente beat">
-          <SkipForward className="h-4 w-4" />
-        </button>
+      <div className="sticky top-0 h-[100dvh] overflow-hidden bg-[#050505]">
+        {SERVICES.map((s, i) => {
+          // Cada servicio entra cubriendo al anterior desde abajo
+          const t = i === 0 ? "1" : `clamp(0, calc(var(--f) - ${i - 1}), 1)`;
+          const here = `clamp(0, calc(1 - (var(--f) - ${i}) * (var(--f) - ${i}) * 4.5), 1)`; // 1 cuando es el actual; se apaga antes de que entre el siguiente
+          return (
+            <div key={s.title} className="absolute inset-0" style={{ clipPath: `inset(calc((1 - ${t}) * 100%) 0 0 0)`, zIndex: i }}>
+              <Photo src={s.img} pos={s.pos} className="absolute inset-0" imgStyle={{ transform: `scale(calc(1.12 - ${t} * 0.08))` }} />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/55 to-[#050505]/10 md:bg-gradient-to-r md:from-[#050505] md:via-[#050505]/70 md:to-transparent" />
+
+              <div className="relative flex h-full items-end px-5 pb-10 pt-24 md:items-center md:px-16 md:pb-0">
+                <div className="max-w-xl" style={{ opacity: here, transform: `translateY(calc((1 - ${here}) * 30px))` }}>
+                  <p className="font-['Instrument_Serif'] text-lg italic text-[#E9CF7A] md:text-2xl">Servicios</p>
+                  <h3 className="mt-1 font-['Jost'] text-[clamp(1.9rem,4.4vw,4rem)] font-extralight uppercase leading-[1.02] tracking-[0.03em] text-white">{s.title}</h3>
+                  <p className="mt-4 max-w-lg font-['Space_Grotesk'] text-[15px] leading-relaxed text-zinc-300 md:text-lg">{s.text}</p>
+                  <ul className="mt-5 space-y-2">
+                    {s.includes.map((x) => (
+                      <li key={x} className="flex items-center gap-3 font-['Space_Grotesk'] text-sm text-zinc-200 md:text-base">
+                        <Check className="h-4 w-4 shrink-0 text-[#D4AF37]" strokeWidth={2.2} />
+                        {x}
+                      </li>
+                    ))}
+                  </ul>
+                  <button
+                    onClick={() => onBook(s.book)}
+                    tabIndex={cur === i ? 0 : -1}
+                    className="group mt-7 inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-6 py-3.5 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.14em] text-black transition-colors hover:bg-[#e6c25a]"
+                  >
+                    Agendar este servicio <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Índice de los 9 servicios (escritorio): sirve para saltar a cualquiera */}
+        <nav className="absolute right-10 top-1/2 z-50 hidden -translate-y-1/2 flex-col items-end gap-2.5 lg:flex" aria-label="Servicios">
+          {SERVICES.map((s, i) => (
+            <button
+              key={s.title}
+              onClick={() => jump(i)}
+              className={`text-right font-['Space_Grotesk'] text-[13px] transition-all duration-500 ${cur === i ? "translate-x-0 text-white" : "translate-x-2 text-white/35 hover:text-white/70"}`}
+            >
+              {s.title}
+              <span className={`ml-3 inline-block h-px align-middle transition-all duration-500 ${cur === i ? "w-8 bg-[#D4AF37]" : "w-3 bg-white/30"}`} />
+            </button>
+          ))}
+        </nav>
       </div>
-    </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CAPÍTULO 04 — DESDE LA IDEA HASTA EL LANZAMIENTO (el lema del cartel sobre el público)
+   ═══════════════════════════════════════════════════════════════ */
+
+function ChapterStatement({ index, setRef }) {
+  const root = useRef(null);
+  const line1 = "Desde la idea hasta el lanzamiento.".split(" ");
+  const line2 = "Hacemos realidad tu proyecto.".split(" ");
+  const total = line1.length + line2.length;
+
+  useProgress(index, (p) => root.current?.style.setProperty("--q", seg(p, 0.05, 0.75).toFixed(4)));
+
+  const word = (w, i, gold) => {
+    const t = `clamp(0, calc(var(--q) * ${total + 2} - ${i}), 1)`;
+    return (
+      <React.Fragment key={`${gold}-${i}`}>
+        <span
+          className={`inline-block ${gold ? "font-['Instrument_Serif'] normal-case italic tracking-normal text-[#E9CF7A]" : ""}`}
+          style={{ opacity: `calc(0.12 + 0.88 * ${t})`, filter: `blur(calc((1 - ${t}) * 6px))`, transform: `translateY(calc((1 - ${t}) * 0.25em))` }}
+        >
+          {w}
+        </span>{" "}
+      </React.Fragment>
+    );
+  };
+
+  return (
+    <section
+      ref={(el) => {
+        root.current = el;
+        setRef(el);
+      }}
+      aria-label="Desde la idea hasta el lanzamiento"
+      className="relative h-[220vh]"
+      style={{ "--q": 0 }}
+    >
+      <div className="sticky top-0 h-[100dvh] overflow-hidden">
+        <Photo src={IMAGES.crowdGold} className="absolute inset-0" imgStyle={{ transform: "scale(calc(1.1 - var(--p, 0) * 0.08))" }} />
+        <div className="absolute inset-0 bg-[#050505]/55" />
+        <div className="relative flex h-full flex-col items-center justify-center px-6 text-center">
+          <p className="max-w-5xl font-['Jost'] text-[clamp(1.7rem,4.6vw,4.4rem)] font-light uppercase leading-[1.12] tracking-[0.04em] text-white">
+            {line1.map((w, i) => word(w, i, false))}
+            <br className="hidden md:block" />
+            {line2.map((w, i) => word(w, line1.length + i, true))}
+          </p>
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-3" style={{ opacity: reveal("--q", 0.85, 1) }}>
+            <ParentalAdvisory />
+            <span className="font-['Space_Grotesk'] text-sm text-zinc-300">Spotify · Apple Music · YouTube · TikTok</span>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -939,20 +943,6 @@ function ChapterOrigin({ index, setRef }) {
           );
         })}
 
-        {/* Píldoras flotantes con cursor (Pallet Ross) */}
-        <div className="pointer-events-none absolute inset-0 z-30" style={{ opacity: "calc(var(--b) * 1.4 - var(--c) * 2.2)" }} aria-hidden="true">
-          <Pill className="absolute left-[6%] top-[24%] [animation:jv-float_5s_ease-in-out_infinite] md:left-[16%]">Sonido urbano de élite</Pill>
-          <Pill className="absolute right-[5%] top-[30%] [animation:jv-float_6s_ease-in-out_-2s_infinite] md:right-[16%]">Cabina tratada</Pill>
-          <Pill className="absolute left-[8%] top-[78%] [animation:jv-float_7s_ease-in-out_-1s_infinite] md:left-[20%]">
-            <span className="h-2 w-2 rounded-full bg-red-500 [animation:jv-blink_1s_infinite]" /> REC
-          </Pill>
-          <Pill className="absolute right-[8%] top-[84%] hidden [animation:jv-float_5.5s_ease-in-out_-3s_infinite] sm:inline-flex md:right-[22%]">Master ready</Pill>
-          <Pill className="absolute left-[3%] top-[52%] hidden [animation:jv-float_6s_ease-in-out_-5s_infinite] lg:inline-flex lg:left-[10%]">Hitmakers</Pill>
-          <div className="absolute right-[4%] top-[62%] flex items-start [animation:jv-float_6.5s_ease-in-out_-4s_infinite] md:right-[12%]">
-            <CursorIcon className="-mr-1 -mt-2.5 h-5 w-5" />
-            <Pill className="border-[#D4AF37]/40 text-[#f3e3ad]">@JVProduction</Pill>
-          </div>
-        </div>
 
         {/* Manifiesto palabra a palabra sobre la foto expandida: cada palabra sale del desenfoque */}
         <div className="absolute inset-0 z-30 bg-black" style={{ opacity: "calc(var(--c) * 0.35 + var(--d) * 0.45)" }} />
@@ -996,660 +986,7 @@ function ChapterOrigin({ index, setRef }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   INTERLUDIO — tipografía gigante que corre con el scroll y se inclina con la velocidad
-   ═══════════════════════════════════════════════════════════════ */
-
-function MarqueeRow({ items, variant }) {
-  return (
-    <div className="flex shrink-0 items-center gap-[3vw] pr-[3vw]">
-      {items.map((w, i) =>
-        typeof w === "object" ? (
-          <span key={i} className="inline-block h-[0.62em] w-[1.35em] shrink-0 overflow-hidden rounded-full border border-white/20">
-            <img src={w.img} alt="" className="h-full w-full object-cover" />
-          </span>
-        ) : (
-          <span key={i} className={variant === "outline" ? "jv-outline" : "jv-gold"}>
-            {w}
-          </span>
-        )
-      )}
-    </div>
-  );
-}
-
-function Interlude({ setRef }) {
-  return (
-    <section ref={setRef} aria-hidden="true" className="relative overflow-hidden py-[12vh] md:py-[18vh]">
-      {/* Escenario con niebla de fondo, con parallax */}
-      <img
-        src={IMAGES.stageFog}
-        alt=""
-        className="absolute inset-x-0 -top-[15%] h-[130%] w-full object-cover opacity-60"
-        style={{ transform: "translateY(calc((var(--t, 0.5) - 0.5) * -14%))" }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#050505]/40 to-[#050505]" />
-      <div className="relative flex flex-col gap-[2vh] whitespace-nowrap" style={{ transform: "skewX(calc(var(--vel, 0) * -12deg))" }}>
-        <div className="flex w-max font-['Jost'] text-[clamp(3rem,11vw,11rem)] font-extralight uppercase leading-none" style={{ transform: "translateX(calc(var(--t, 0) * -38%))" }}>
-          <MarqueeRow items={INTERLUDE_A} variant="outline" />
-          <MarqueeRow items={INTERLUDE_A} variant="outline" />
-        </div>
-        <div className="flex w-max font-['Instrument_Serif'] text-[clamp(2.6rem,8.5vw,8.5rem)] italic leading-none" style={{ transform: "translateX(calc(-45% + var(--t, 0) * 38%))" }}>
-          <MarqueeRow items={INTERLUDE_B} />
-          <MarqueeRow items={INTERLUDE_B} />
-          <MarqueeRow items={INTERLUDE_B} />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CAPÍTULO 02 — SERVICIOS (recorrido horizontal en carrusel 3D)
-   ═══════════════════════════════════════════════════════════════ */
-
-function Fader({ value, onChange, label }) {
-  const ref = useRef(null);
-  const setFrom = (clientY) => {
-    const r = ref.current.getBoundingClientRect();
-    onChange(Math.min(1, Math.max(0, 1 - (clientY - r.top) / r.height)));
-  };
-  return (
-    <div className="flex h-full flex-col items-center gap-1">
-      <div
-        ref={ref}
-        role="slider"
-        tabIndex={0}
-        aria-label={label}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={Math.round(value * 100)}
-        data-cursor="Arrastra"
-        className="relative w-7 flex-1 touch-none outline-none focus-visible:ring-1 focus-visible:ring-[#D4AF37]"
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={(e) => {
-          e.stopPropagation();
-          e.currentTarget.setPointerCapture(e.pointerId);
-          setFrom(e.clientY);
-        }}
-        onPointerMove={(e) => e.currentTarget.hasPointerCapture(e.pointerId) && setFrom(e.clientY)}
-        onKeyDown={(e) => {
-          if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-            e.preventDefault();
-            onChange(Math.min(1, Math.max(0, value + (e.key === "ArrowUp" ? 0.05 : -0.05))));
-          }
-        }}
-      >
-        <div className="absolute inset-y-1 left-1/2 w-1 -translate-x-1/2 rounded-full bg-white/10" />
-        <div className="absolute bottom-1 left-1/2 w-1 -translate-x-1/2 rounded-full bg-gradient-to-t from-[#D4AF37] to-white" style={{ height: `calc(${value * 100}% - 8px)` }} />
-        <div
-          className="absolute left-1/2 h-3.5 w-7 -translate-x-1/2 translate-y-1/2 rounded-[4px] border border-white/40 bg-gradient-to-b from-zinc-100 to-zinc-500 shadow-[0_4px_10px_rgba(0,0,0,.6)]"
-          style={{ bottom: `calc(${value * 100}% * .9 + 5%)` }}
-        />
-      </div>
-      <span className="font-['JetBrains_Mono'] text-[9px] uppercase text-zinc-500">{label}</span>
-    </div>
-  );
-}
-
-function MixWidget() {
-  const [v, setV] = useState([0.72, 0.55, 0.84]);
-  const lufs = (-20 + ((v[0] + v[1] + v[2]) / 3) * 14).toFixed(1);
-  return (
-    <div className="flex h-full min-h-0 gap-2">
-      {["Vox", "808", "Mst"].map((l, i) => (
-        <Fader key={l} label={l} value={v[i]} onChange={(nv) => setV((a) => a.map((x, j) => (j === i ? nv : x)))} />
-      ))}
-      <div className="ml-auto flex flex-col items-end justify-end">
-        <span className="font-['Jost'] text-3xl font-light leading-none text-white">{lufs}</span>
-        <span className="font-['JetBrains_Mono'] text-[9px] uppercase text-zinc-500">LUFS</span>
-      </div>
-    </div>
-  );
-}
-
-function PadsWidget() {
-  const [hit, setHit] = useState(-1);
-  const colors = ["bg-emerald-400", "bg-red-500", "bg-emerald-400", "bg-[#D4AF37]", "bg-red-500", "bg-emerald-400", "bg-[#D4AF37]", "bg-red-500"];
-  const press = (i) => {
-    blip(i);
-    setHit(i);
-    setTimeout(() => setHit((h) => (h === i ? -1 : h)), 160);
-  };
-  return (
-    <div className="grid h-full min-h-0 grid-cols-4 grid-rows-2 gap-1.5">
-      {colors.map((c, i) => (
-        <button
-          key={i}
-          onPointerDown={(e) => {
-            e.stopPropagation();
-            press(i);
-          }}
-          onClick={(e) => e.stopPropagation()}
-          aria-label={`Pad ${i + 1}`}
-          data-cursor="Toca"
-          className={`rounded-lg border border-white/10 transition-all duration-150 ${hit === i ? `${c} scale-95 shadow-[0_0_24px_currentColor]` : "bg-white/[0.04] hover:bg-white/[0.08]"}`}
-        />
-      ))}
-    </div>
-  );
-}
-
-function ProductionWidget() {
-  const rows = [[[0, 24], [30, 24], [60, 24]], [[10, 90]], [[0, 100]], [[20, 22], [45, 22], [75, 24]]];
-  return (
-    <div className="flex h-full min-h-0 flex-col justify-end">
-      <div className="relative flex flex-col gap-1.5">
-        {rows.map((r, i) => (
-          <div key={i} className="relative h-4 rounded-sm bg-white/[0.04]">
-            {r.map(([l, w], j) => (
-              <span key={j} className={`absolute inset-y-0 rounded-sm ${i % 2 ? "bg-blue-500/60" : "bg-pink-500/60"}`} style={{ left: `${l}%`, width: `${w}%` }} />
-            ))}
-          </div>
-        ))}
-        {/* Cabezal de reproducción */}
-        <span className="absolute -inset-y-1 w-px bg-white shadow-[0_0_8px_#fff] [animation:jv-sweep_4s_linear_infinite]" />
-      </div>
-    </div>
-  );
-}
-
-function VoiceWidget({ hours, setHours }) {
-  const btn = "grid h-10 w-10 place-items-center rounded-full border border-white/15 text-zinc-300 hover:border-white/40";
-  return (
-    <div className="flex h-full min-h-0 items-end justify-between gap-3">
-      <div className="flex items-center gap-3">
-        <button onClick={(e) => (e.stopPropagation(), setHours((h) => Math.max(1, h - 1)))} className={btn} aria-label="Menos horas">
-          <Minus className="h-4 w-4" />
-        </button>
-        <span className="min-w-[3ch] text-center font-['Jost'] text-4xl font-light text-white">{hours}h</span>
-        <button onClick={(e) => (e.stopPropagation(), setHours((h) => Math.min(10, h + 1)))} className={btn} aria-label="Más horas">
-          <Plus className="h-4 w-4" />
-        </button>
-      </div>
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-red-500/15 px-2.5 py-1 font-['JetBrains_Mono'] text-[10px] text-red-300">
-        <span className="h-1.5 w-1.5 rounded-full bg-red-500 [animation:jv-blink_1s_infinite]" /> REC
-      </span>
-    </div>
-  );
-}
-
-function CameraWidget() {
-  const [t, setT] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setT((x) => x + 1), 1000 / 24);
-    return () => clearInterval(id);
-  }, []);
-  const tc = `${String(Math.floor(t / 1440) % 60).padStart(2, "0")}:${String(Math.floor(t / 24) % 60).padStart(2, "0")}:${String(t % 24).padStart(2, "0")}`;
-  return (
-    <div className="relative h-full min-h-[80px] overflow-hidden rounded-2xl bg-black">
-      <img src={IMAGES.night} alt="" className="absolute inset-0 h-full w-full object-cover opacity-50 grayscale" style={{ objectPosition: "50% 40%" }} />
-      {["left-2 top-2 border-l-2 border-t-2", "right-2 top-2 border-r-2 border-t-2", "bottom-2 left-2 border-b-2 border-l-2", "bottom-2 right-2 border-b-2 border-r-2"].map((c) => (
-        <span key={c} className={`absolute h-5 w-5 border-white/80 ${c}`} />
-      ))}
-      <span className="absolute left-1/2 top-1/2 h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/50" />
-      <span className="absolute left-4 top-3 flex items-center gap-1.5 font-['JetBrains_Mono'] text-[10px] font-medium text-white">
-        <span className="h-2 w-2 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444] [animation:jv-blink_1s_infinite]" /> REC
-      </span>
-      <span className="absolute right-4 top-3 font-['JetBrains_Mono'] text-[10px] text-white/80">4K · 24fps</span>
-      <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-['JetBrains_Mono'] text-[10px] tabular-nums text-white/90">{tc}</span>
-    </div>
-  );
-}
-
-function LyricsWidget() {
-  const [line, setLine] = useState(0);
-  const [chars, setChars] = useState(0);
-  useEffect(() => {
-    const full = LYRICS[line];
-    const id = setTimeout(
-      () => {
-        if (chars < full.length) setChars((c) => c + 1);
-        else {
-          setLine((l) => (l + 1) % LYRICS.length);
-          setChars(0);
-        }
-      },
-      chars < full.length ? 55 : 1600
-    );
-    return () => clearTimeout(id);
-  }, [chars, line]);
-  return (
-    <div className="flex h-full min-h-0 items-end">
-      <p className="font-['Mrs_Saint_Delafield'] text-3xl leading-tight text-[#f3e3ad]">
-        {LYRICS[line].slice(0, chars)}
-        <span className="ml-0.5 inline-block h-5 w-[2px] translate-y-1 bg-[#D4AF37] [animation:jv-caret_1s_steps(1)_infinite]" />
-      </p>
-    </div>
-  );
-}
-
-function CoverWidget() {
-  const styles = [
-    "bg-[radial-gradient(circle_at_30%_30%,#f8fafc,#64748b_45%,#050505_75%)]",
-    "bg-[radial-gradient(circle_at_70%_20%,#F59E0B,#7c2d12_50%,#050505_80%)]",
-    "bg-[radial-gradient(circle_at_40%_70%,#6D28D9,#1D4ED8_45%,#050505_80%)]",
-  ];
-  const [s, setS] = useState(0);
-  return (
-    <div className="flex h-full min-h-0 items-center justify-center">
-      <button
-        onClick={(e) => (e.stopPropagation(), setS((x) => (x + 1) % styles.length))}
-        aria-label="Cambiar estilo de portada"
-        data-cursor="Cambia"
-        className={`relative aspect-square h-full max-h-40 rounded-lg border border-white/15 shadow-[0_10px_30px_rgba(0,0,0,.6)] transition-all duration-500 hover:-rotate-3 hover:scale-105 ${styles[s]}`}
-      >
-        <span className="absolute left-2 top-1.5 font-['Pinyon_Script'] text-2xl text-white/90">JV</span>
-        <span className="absolute bottom-2 right-2 border border-white bg-black px-1 font-black text-[6px] leading-tight text-white">
-          PARENTAL
-          <br />
-          ADVISORY
-        </span>
-      </button>
-    </div>
-  );
-}
-
-function VisualizerWidget() {
-  return (
-    <div className="relative grid h-full min-h-0 place-items-center overflow-hidden rounded-xl border border-white/10 bg-black">
-      <div className="absolute inset-0 bg-[radial-gradient(circle,rgba(109,40,217,.4),transparent_65%)]" />
-      <div className="absolute aspect-square h-2/3 w-auto rounded-full border border-white/10 [animation:jv-spin_12s_linear_infinite]" />
-      <div className="absolute aspect-square h-1/2 w-auto rounded-full border border-dashed border-[#D4AF37]/30 [animation:jv-spin_8s_linear_infinite_reverse]" />
-      <EqBars playing count={16} className="relative h-1/2 w-3/4" />
-    </div>
-  );
-}
-
-function DistributionWidget() {
-  const stores = ["Spotify", "Apple Music", "YouTube Music", "Amazon Music", "Deezer", "Tidal", "TikTok", "+150 tiendas"];
-  return (
-    <div className="flex h-full min-h-0 flex-col justify-end gap-3">
-      <div className="relative mx-auto grid aspect-square h-[clamp(70px,14dvh,140px)] place-items-center">
-        <div className="absolute inset-0 rounded-full border border-white/10" />
-        <div className="absolute inset-[12%] rounded-full border border-dashed border-[#D4AF37]/40 [animation:jv-spin_30s_linear_infinite]" />
-        <Globe className="h-1/2 w-1/2 text-zinc-200 [animation:jv-spin_40s_linear_infinite]" strokeWidth={0.8} />
-      </div>
-      <div className="flex flex-wrap gap-1">
-        {stores.map((s) => (
-          <span key={s} className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-0.5 font-['Space_Grotesk'] text-[10px] text-zinc-300">
-            {s}
-          </span>
-        ))}
-      </div>
-      <div className="h-1 overflow-hidden rounded-full bg-white/10">
-        <div className="h-full bg-gradient-to-r from-[#D4AF37] to-white [animation:jv-load_3s_ease-out_infinite]" />
-      </div>
-    </div>
-  );
-}
-
-const ServiceCard = React.forwardRef(function ServiceCard({ item, selected, onSelect, onBook, children }, ref) {
-  const Icon = item.icon;
-  const inner = useRef(null);
-  const tilt = (e) => {
-    if (e.pointerType !== "mouse") return;
-    const r = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width;
-    const py = (e.clientY - r.top) / r.height;
-    const s = inner.current.style;
-    s.setProperty("--tx", ((0.5 - py) * 10).toFixed(2));
-    s.setProperty("--ty", ((px - 0.5) * 12).toFixed(2));
-    s.setProperty("--gx", `${(px * 100).toFixed(1)}%`);
-    s.setProperty("--gy", `${(py * 100).toFixed(1)}%`);
-    s.setProperty("--go", "1");
-  };
-  const untilt = () => {
-    const s = inner.current.style;
-    s.setProperty("--tx", "0");
-    s.setProperty("--ty", "0");
-    s.setProperty("--go", "0");
-  };
-  return (
-    // Posición en el carrusel: --k (-1.5 → 1.5) la calcula ChapterServices en cada frame
-    <div ref={ref} className="shrink-0 [perspective:1400px]" style={{ "--k": 0, "--ka": 0 }}>
-      <div
-        ref={inner}
-        role="button"
-        tabIndex={0}
-        onClick={onSelect}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelect())}
-        onPointerMove={tilt}
-        onPointerLeave={untilt}
-        aria-pressed={selected}
-        data-cursor={selected ? "Agendar" : "Elegir"}
-        className={`jv-frame relative flex h-[min(62dvh,560px)] w-[80vw] flex-col overflow-hidden rounded-[28px] p-5 transition-[box-shadow] duration-500 sm:w-[360px] lg:w-[400px] lg:p-7 ${
-          selected ? "is-on shadow-[0_0_80px_-12px_rgba(212,175,55,.55)]" : "shadow-[0_40px_80px_-30px_rgba(0,0,0,.9)]"
-        }`}
-        style={{
-          transform:
-            "rotateY(calc(var(--k) * -12deg + var(--ty, 0) * 1deg)) rotateX(calc(var(--tx, 0) * 1deg)) translateZ(calc(var(--ka) * -50px))",
-          opacity: "calc(1 - var(--ka) * 0.4)",
-          transition: "transform .18s ease-out, box-shadow .5s",
-          "--go": 0,
-        }}
-      >
-        {/* Foto del servicio arriba, fundida hacia el contenido */}
-        <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
-          <img src={item.img} alt="" className={`h-full w-full object-cover transition-[opacity,transform] duration-700 ${selected ? "scale-[1.03] opacity-60" : "opacity-40"}`} />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#09090b]/30 via-[#09090b]/88 to-[#09090b]" />
-        </div>
-        {/* Brillo que sigue al ratón */}
-        <div
-          className="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300"
-          style={{ background: "radial-gradient(420px circle at var(--gx, 50%) var(--gy, 0%), rgba(255,255,255,.10), transparent 45%)", opacity: "var(--go)" }}
-        />
-        <div className="relative z-10 flex shrink-0 items-center justify-between">
-          <span className={`grid h-12 w-12 place-items-center rounded-full border transition-colors duration-500 ${selected ? "border-[#D4AF37] bg-[#D4AF37] text-black" : "border-white/15 text-zinc-200"}`}>
-            <Icon className="h-5 w-5" strokeWidth={1.5} />
-          </span>
-          <ArrowUpRight className={`h-5 w-5 transition-all duration-500 ${selected ? "rotate-45 text-[#D4AF37]" : "text-white/25"}`} />
-        </div>
-        <h3 className="relative z-10 mt-5 shrink-0 font-['Jost'] text-xl font-light uppercase leading-tight tracking-[0.06em] text-white lg:text-[1.65rem]">{item.title}</h3>
-        <p className="relative z-10 mt-2 shrink-0 font-['Space_Grotesk'] text-sm leading-relaxed text-zinc-500">{item.desc}</p>
-        <div className="relative z-10 mt-4 min-h-0 flex-1">{children}</div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            selected ? onBook() : onSelect();
-          }}
-          className={`relative z-10 mt-4 flex w-full shrink-0 items-center justify-center gap-2 overflow-hidden rounded-full px-3 py-3 font-['Space_Grotesk'] text-[11px] font-bold uppercase tracking-[0.14em] transition-all duration-500 ${
-            selected ? "bg-[#D4AF37] text-black hover:bg-[#e6c25a]" : "border border-white/10 text-zinc-400 hover:border-white/30 hover:text-white"
-          }`}
-        >
-          {selected ? "Agendar este servicio" : "Seleccionar"} <ArrowRight className="h-3.5 w-3.5" />
-        </button>
-      </div>
-    </div>
-  );
-});
-
-function ChapterServices({ index, setRef, onBook, hours, setHours }) {
-  const stage = useRef(null);
-  const track = useRef(null);
-  const cards = useRef([]);
-  const [dist, setDist] = useState(0);
-  const [cur, setCur] = useState(0);
-  const [sel, setSel] = useState(null);
-
-  useEffect(() => {
-    const calc = () => {
-      if (!track.current || !stage.current) return;
-      setDist(Math.max(0, track.current.scrollWidth - stage.current.clientWidth));
-    };
-    calc();
-    // Recalcula si cambian las tarjetas (carga de fuentes/estilos) o la ventana
-    const ro = new ResizeObserver(calc);
-    ro.observe(track.current);
-    ro.observe(stage.current);
-    return () => ro.disconnect();
-  }, []);
-
-  // Al cambiar la distancia, fuerza un frame del motor para recolocar el carrusel
-  useEffect(() => {
-    window.dispatchEvent(new Event("scroll"));
-  }, [dist]);
-
-  useProgress(index, (p, enter) => {
-    const c = Math.min(SERVICES.length - 1, Math.floor(p * SERVICES.length));
-    setCur((x) => (x === c ? x : c));
-    if (enter <= 0 || p >= 1) return;
-    const vw = window.innerWidth;
-    cards.current.forEach((el) => {
-      if (!el) return;
-      const r = el.getBoundingClientRect();
-      const k = clamp((r.left + r.width / 2 - vw / 2) / (vw * 0.6), -1.5, 1.5);
-      el.style.setProperty("--k", k.toFixed(3));
-      el.style.setProperty("--ka", Math.abs(k).toFixed(3));
-    });
-  });
-
-  const widget = (id) =>
-    ({
-      produccion: <ProductionWidget />,
-      beats: <PadsWidget />,
-      mezcla: <MixWidget />,
-      voces: <VoiceWidget hours={hours} setHours={setHours} />,
-      videoclips: <CameraWidget />,
-      letras: <LyricsWidget />,
-      portadas: <CoverWidget />,
-      visualizers: <VisualizerWidget />,
-      distribucion: <DistributionWidget />,
-    }[id]);
-
-  const cat = SERVICES[cur].cat;
-
-  return (
-    <section ref={setRef} aria-label="Servicios" className="relative" style={{ height: `calc(100dvh + ${dist}px)` }}>
-      <div ref={stage} className="sticky top-0 flex h-[100dvh] flex-col overflow-hidden pb-6 pt-[76px] md:pt-28">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_20%_30%,rgba(109,40,217,.28),transparent_55%),radial-gradient(ellipse_at_90%_80%,rgba(29,78,216,.22),transparent_55%)]" />
-        <Fog seed={9} tint="0.62 0.55 0.92" className="left-0 top-[40%] h-[70%] w-full opacity-30" />
-
-        {/* Palabra gigante de fondo según el bloque */}
-        <div className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2" aria-hidden="true">
-          {CATEGORY_WORDS.map((w, i) => (
-            <span
-              key={w}
-              className="absolute inset-x-0 -translate-y-1/2 text-center text-transparent [-webkit-text-stroke:1px_rgba(226,232,240,.22)] font-['Jost'] text-[clamp(6rem,24vw,24rem)] font-extralight uppercase leading-none tracking-[0.04em] transition-all duration-1000 ease-[cubic-bezier(.2,.7,.2,1)]"
-              style={{
-                opacity: cat === i ? 1 : 0,
-                transform: `translateY(${cat === i ? 0 : i < cat ? -60 : 60}px)`,
-                filter: cat === i ? "blur(0px)" : "blur(10px)",
-                letterSpacing: cat === i ? "0.04em" : "0.2em",
-              }}
-            >
-              {w}
-            </span>
-          ))}
-        </div>
-
-        <div className="relative z-10 shrink-0 px-5 md:px-12">
-          <h2 className="font-['Jost'] text-[clamp(2rem,6vw,5rem)] font-extralight uppercase leading-none tracking-[0.06em]">
-            <SplitReveal text="360° Music Factory" from={0.35} to={0.95} letterClass="jv-chrome" />
-          </h2>
-          <p className="mt-2 font-['Instrument_Serif'] text-lg italic text-zinc-400 md:text-2xl" style={{ opacity: reveal("--enter", 0.7, 1) }}>
-            Nueve servicios. <span className="text-[#D4AF37]">Un solo sonido.</span>
-          </p>
-        </div>
-
-        <div className="relative z-10 mt-5 flex min-h-0 flex-1 items-center md:mt-8" style={{ transform: "skewX(calc(var(--vel, 0) * -4deg))" }}>
-          <div ref={track} className="flex gap-4 px-5 will-change-transform md:gap-7 md:px-12" style={{ transform: `translateX(calc(var(--p, 0) * -${dist}px))` }}>
-            {SERVICES.map((s, i) => (
-              <ServiceCard
-                key={s.id}
-                ref={(el) => (cards.current[i] = el)}
-                item={s}
-                selected={sel === s.id}
-                onSelect={() => setSel((x) => (x === s.id ? null : s.id))}
-                onBook={() => onBook(s.book)}
-              >
-                {widget(s.id)}
-              </ServiceCard>
-            ))}
-            <div className="flex w-[64vw] shrink-0 flex-col justify-center sm:w-[380px]">
-              <p className="font-['Jost'] text-[clamp(1.8rem,3.2vw,3rem)] font-extralight uppercase leading-[1.05] tracking-[0.04em] text-zinc-200">
-                Todo bajo
-                <br />
-                <span className="font-['Instrument_Serif'] normal-case italic text-[#D4AF37]">un mismo techo.</span>
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CAPÍTULO 03 — EXPERIENCIA (un cabezal recorre la maqueta y la convierte en master)
-   ═══════════════════════════════════════════════════════════════ */
-
-function ChapterExperience({ index, setRef }) {
-  const root = useRef(null);
-  const out = { lufs: useRef(null), peak: useRef(null), stereo: useRef(null), label: useRef(null) };
-  const bars = 72;
-  const head1 = "Desde la idea hasta el lanzamiento.".split(" ");
-  const head2 = "Hacemos realidad tu proyecto.".split(" ");
-  const nWords = head1.length + head2.length;
-
-  useProgress(index, (p) => {
-    const el = root.current;
-    if (!el) return;
-    const m = seg(p, 0.08, 0.6);
-    el.style.setProperty("--m", m.toFixed(4));
-    el.style.setProperty("--q", seg(p, 0.6, 0.95).toFixed(4));
-    if (out.lufs.current) out.lufs.current.textContent = lerp(-19.4, -8.2, m).toFixed(1);
-    if (out.peak.current) out.peak.current.textContent = lerp(-6.3, -1.0, m).toFixed(1);
-    if (out.stereo.current) out.stereo.current.textContent = Math.round(lerp(61, 92, m));
-    if (out.label.current) out.label.current.textContent = m > 0.98 ? "Master ready" : m > 0.02 ? "Masterizando" : "Maqueta";
-  });
-
-  const word = (w, i, chrome) => {
-    const t = reveal("--enter", (0.35 + i * 0.045).toFixed(3), (0.55 + i * 0.045).toFixed(3));
-    return (
-      <React.Fragment key={`${chrome}-${i}`}>
-        <span
-          className={`inline-block ${chrome ? "jv-chrome font-normal" : "text-zinc-500"}`}
-          style={{ opacity: t, filter: `blur(calc((1 - ${t}) * 8px))`, transform: `translateY(calc((1 - ${t}) * 0.4em))` }}
-        >
-          {w}
-        </span>{" "}
-      </React.Fragment>
-    );
-  };
-
-  return (
-    <section
-      ref={(el) => {
-        root.current = el;
-        setRef(el);
-      }}
-      aria-label="Experiencia"
-      className="relative h-[320vh]"
-      style={{ "--m": 0, "--q": 0 }}
-    >
-      <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        {/* Sala de control de fondo, muy oscurecida, que se acerca un poco con el scroll */}
-        <img
-          src={IMAGES.consoleAmber}
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-          style={{ opacity: "calc(0.16 + var(--m) * 0.14)", transform: "scale(calc(1.04 + var(--p, 0) * 0.04))" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/70 to-[#050505]/40" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_10%_90%,rgba(29,78,216,.2),transparent_50%)]" />
-        {/* La luz ámbar del estudio se enciende al masterizar */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_40%,rgba(245,158,11,.28),transparent_55%)]" style={{ opacity: "calc(0.3 + var(--m) * 0.7)" }} />
-        <Fog seed={14} tint="0.95 0.80 0.55" className="left-0 top-[50%] h-[60%] w-full opacity-25" />
-
-        <div className="relative z-10 mx-auto grid h-full max-w-7xl grid-rows-[auto_1fr] gap-5 px-5 pb-24 pt-[76px] md:grid-cols-2 md:grid-rows-1 md:items-center md:gap-14 md:px-12 md:pb-12 md:pt-28">
-          {/* Identidad */}
-          <div className="md:order-2">
-            <h2 className="font-['Jost'] text-[clamp(1.5rem,4.4vw,4.2rem)] font-extralight uppercase leading-[1.05] tracking-[0.04em]">
-              {head1.map((w, i) => word(w, i, false))}
-              {head2.map((w, i) => word(w, head1.length + i, true))}
-            </h2>
-            <div className="mt-3 flex flex-wrap items-center gap-1.5 md:mt-8 md:gap-3" style={{ opacity: reveal("--enter", 0.35 + nWords * 0.045, 0.6 + nWords * 0.045) }}>
-              <ParentalAdvisory className="origin-left scale-[.85] md:scale-100" />
-              {[
-                ["Spotify", "bg-[#1DB954]"],
-                ["Apple Music", "bg-pink-400"],
-                ["YouTube", "bg-red-500"],
-              ].map(([p, c]) => (
-                <span key={p} className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1 font-['Space_Grotesk'] text-[10px] font-medium text-zinc-200 md:px-3 md:py-1.5 md:text-[11px]">
-                  <span className={`h-1.5 w-1.5 rounded-full ${c}`} />
-                  {p}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Showcase: maqueta → master */}
-          <div className="flex min-h-0 flex-col gap-4 md:order-1">
-            <div className="jv-frame relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[28px] p-5 md:flex-none md:p-7">
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-['Instrument_Serif'] text-xl italic text-zinc-300 md:text-2xl">Tu tema</span>
-                <span ref={out.label} className="rounded-full border border-[#D4AF37]/30 bg-[#D4AF37]/10 px-3 py-1 font-['JetBrains_Mono'] text-[10px] uppercase tracking-[0.12em] text-[#f3e3ad]">
-                  Maqueta
-                </span>
-              </div>
-
-              <div className="mt-3 flex min-h-0 flex-1 items-center gap-5 md:mt-5 md:gap-8">
-                <div className="hidden shrink-0 [perspective:700px] sm:block [@media(max-height:700px)]:hidden">
-                  <div className="[transform:rotateX(55deg)_rotateZ(-10deg)]">
-                    <div
-                      className="jv-vinyl relative h-28 w-28 rounded-full md:h-40 md:w-40"
-                      style={{ transform: "rotate(calc(var(--p, 0) * 1080deg))", boxShadow: "0 30px 40px rgba(0,0,0,.8), 0 0 calc(var(--m) * 60px) rgba(212,175,55,calc(var(--m) * .45))" }}
-                    />
-                  </div>
-                </div>
-                <dl className="grid flex-1 grid-cols-3 gap-2">
-                  {[
-                    ["Loudness", out.lufs, "-19.4", "LUFS"],
-                    ["Pico", out.peak, "-6.3", "dBTP"],
-                    ["Stereo", out.stereo, "61", "%"],
-                  ].map(([k, ref, v, u]) => (
-                    <div key={k}>
-                      <dt className="font-['JetBrains_Mono'] text-[9px] uppercase tracking-[0.15em] text-zinc-500">{k}</dt>
-                      <dd className="font-['Jost'] text-3xl font-light leading-tight tabular-nums text-white md:text-4xl">
-                        <span ref={ref}>{v}</span>
-                        <span className="ml-1 font-['JetBrains_Mono'] text-[9px] text-zinc-500">{u}</span>
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-
-              {/* Forma de onda: cada barra cambia cuando el cabezal pasa por encima */}
-              <div className="relative mt-3 flex h-[clamp(44px,10dvh,120px)] shrink-0 items-center gap-[2px] md:mt-5" aria-hidden="true">
-                {Array.from({ length: bars }).map((_, i) => {
-                  const base = 0.35 + Math.abs(Math.sin(i * 0.45) * Math.cos(i * 0.17)) * 0.65;
-                  const before = base * 0.42;
-                  const after = 0.6 + base * 0.4;
-                  const t = `clamp(0, calc((var(--m) * ${bars + 6} - ${i}) / 6), 1)`;
-                  return (
-                    <span key={i} className="relative flex-1 overflow-hidden rounded-full bg-zinc-600" style={{ height: `calc((${before} + ${(after - before).toFixed(3)} * ${t}) * 100%)` }}>
-                      <span className="absolute inset-0 bg-gradient-to-b from-white via-[#E2E8F0] to-[#D4AF37]" style={{ opacity: t }} />
-                    </span>
-                  );
-                })}
-                <span
-                  className="pointer-events-none absolute -bottom-2 -top-2 w-[2px] rounded-full bg-[#fff3c4] shadow-[0_0_14px_4px_rgba(212,175,55,.7)]"
-                  style={{ left: "calc(var(--m) * 100%)", opacity: "calc(min(1, var(--m) * 20) * (1 - var(--q) * 3))" }}
-                />
-              </div>
-            </div>
-
-            {/* Proceso: se ilumina paso a paso */}
-            <div className="relative grid shrink-0 grid-cols-4 gap-2">
-              <div className="absolute left-[12.5%] right-[12.5%] top-[18px] h-px bg-white/10 md:top-[22px]">
-                <div className="h-full bg-gradient-to-r from-[#D4AF37] to-[#fff3c4] shadow-[0_0_10px_#D4AF37]" style={{ width: "calc(var(--q) * 100%)" }} />
-              </div>
-              {STEPS.map((s, i) => {
-                const Icon = s.icon;
-                const t = `clamp(0, calc(var(--q) * 4.2 - ${i}), 1)`;
-                return (
-                  <div key={s.short} className="relative flex flex-col items-center text-center" style={{ opacity: `calc(0.3 + 0.7 * ${t})` }}>
-                    <span
-                      className="grid h-9 w-9 place-items-center rounded-full border bg-[#0c0c0e] md:h-11 md:w-11"
-                      style={{ borderColor: `rgba(212,175,55,calc(0.2 + ${t} * 0.8))`, boxShadow: `0 0 calc(${t} * 18px) rgba(212,175,55,.5)`, transform: `scale(calc(0.9 + ${t} * 0.1))` }}
-                    >
-                      <Icon className="h-4 w-4 text-[#D4AF37]" strokeWidth={1.6} />
-                    </span>
-                    <span className="mt-2 font-['Space_Grotesk'] text-[10px] font-semibold uppercase tracking-[0.08em] text-white md:text-xs">{s.short}</span>
-                    <span className="mt-1 hidden font-['Space_Grotesk'] text-[11px] leading-snug text-zinc-500 lg:block">{s.desc}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════════
-   CAPÍTULO 04 — AGENDAR (un círculo de luz champagne se abre desde abajo)
+   CAPÍTULO 05 — AGENDAR (un círculo de luz champagne se abre desde abajo)
    ═══════════════════════════════════════════════════════════════ */
 
 function Choice({ active, onClick, children }) {
@@ -1734,6 +1071,17 @@ function ChapterBooking({ setRef, booking, setBooking }) {
                     {o === "Sesión por Horas" && format === o ? ` · ${hours}h` : ""}
                   </Choice>
                 ))}
+                {label === "Formato" && format === "Sesión por Horas" && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-black/20 bg-white/50 px-1">
+                    <button onClick={() => set("hours", Math.max(1, hours - 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-black/10" aria-label="Menos horas">
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="min-w-[2.5ch] text-center font-['Space_Grotesk'] text-xs font-semibold">{hours}h</span>
+                    <button onClick={() => set("hours", Math.min(10, hours + 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-black/10" aria-label="Más horas">
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                )}
               </div>
             </fieldset>
           ))}
@@ -1772,13 +1120,11 @@ function ChapterBooking({ setRef, booking, setBooking }) {
    APP
    ═══════════════════════════════════════════════════════════════ */
 
-export default function JVProductionsImmersive() {
+export default function JVProductions() {
   const sections = useRef([]);
   const listeners = useRef(new Map());
-  const kickRef = useRef(() => {});
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [booking, setBooking] = useState({ services: [], format: "Sesión por Horas", when: "Esta semana", name: "", hours: 2 });
 
   const ctx = useRef({
@@ -1789,10 +1135,10 @@ export default function JVProductionsImmersive() {
     },
   }).current;
 
-  // Bloquea el scroll mientras dura la intro o el menú está abierto
+  // Bloquea el scroll mientras dura la intro
   useEffect(() => {
-    document.documentElement.style.overflow = ready && !menuOpen ? "" : "hidden";
-  }, [ready, menuOpen]);
+    document.documentElement.style.overflow = ready ? "" : "hidden";
+  }, [ready]);
 
   useEffect(() => {
     window.history.scrollRestoration = "manual";
@@ -1803,8 +1149,6 @@ export default function JVProductionsImmersive() {
     const state = [];
     const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
     let raf = 0;
-    let lastY = window.scrollY;
-    let vel = 0;
     let first = true;
 
     const approach = (cur, target) => {
@@ -1815,11 +1159,7 @@ export default function JVProductionsImmersive() {
     const tick = () => {
       raf = 0;
       const vh = window.innerHeight;
-      const y = window.scrollY;
-      vel += (y - lastY - vel) * 0.18;
-      lastY = y;
-      let moving = Math.abs(vel) > 0.05;
-      if (!moving) vel = 0;
+      let moving = false;
       let current = 0;
 
       sections.current.forEach((el, i) => {
@@ -1827,16 +1167,13 @@ export default function JVProductionsImmersive() {
         const r = el.getBoundingClientRect();
         const tp = clamp01(-r.top / Math.max(1, el.offsetHeight - vh));
         const te = clamp01(1 - r.top / vh);
-        const tt = clamp01((vh - r.top) / (vh + el.offsetHeight));
-        const s = state[i] || (state[i] = { p: tp, e: te, t: tt });
-        if (first) Object.assign(s, { p: tp, e: te, t: tt });
+        const s = state[i] || (state[i] = { p: tp, e: te });
+        if (first) Object.assign(s, { p: tp, e: te });
         s.p = approach(s.p, tp);
         s.e = approach(s.e, te);
-        s.t = approach(s.t, tt);
-        if (s.p !== tp || s.e !== te || s.t !== tt) moving = true;
+        if (s.p !== tp || s.e !== te) moving = true;
         el.style.setProperty("--p", s.p.toFixed(4));
         el.style.setProperty("--enter", s.e.toFixed(4));
-        el.style.setProperty("--t", s.t.toFixed(4));
         listeners.current.get(i)?.forEach((fn) => fn(s.p, s.e));
         if (r.top <= vh * 0.5) current = i;
       });
@@ -1846,7 +1183,6 @@ export default function JVProductionsImmersive() {
       if (Math.abs(mouse.x - mouse.sx) > 0.001 || Math.abs(mouse.y - mouse.sy) > 0.001) moving = true;
       docEl.style.setProperty("--mx", mouse.sx.toFixed(4));
       docEl.style.setProperty("--my", mouse.sy.toFixed(4));
-      docEl.style.setProperty("--vel", clamp(vel / 40, -1, 1).toFixed(4));
 
       first = false;
       setActive((a) => (a === current ? a : current));
@@ -1855,7 +1191,6 @@ export default function JVProductionsImmersive() {
     const kick = () => {
       if (!raf) raf = requestAnimationFrame(tick);
     };
-    kickRef.current = kick;
     const onMove = (e) => {
       if (e.pointerType !== "mouse" || reduce) return;
       mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -1889,23 +1224,19 @@ export default function JVProductionsImmersive() {
     goTo(S.booking);
   };
 
-  const setHours = (fn) => setBooking((b) => ({ ...b, hours: typeof fn === "function" ? fn(b.hours) : fn }));
   const reg = (i) => (el) => (sections.current[i] = el);
 
   return (
     <ProgressCtx.Provider value={ctx}>
-      <div className="jv-root jv-grain relative overflow-x-clip bg-[#050505] font-['Space_Grotesk'] text-zinc-200 antialiased">
+      <div className="jv-grain relative overflow-x-clip bg-[#050505] font-['Space_Grotesk'] text-zinc-200 antialiased">
         <GlobalStyles />
         <Intro onDone={() => setReady(true)} />
-        <Cursor />
-        <Nav menuOpen={menuOpen} setMenuOpen={setMenuOpen} goTo={goTo} />
-        <MenuOverlay open={menuOpen} onClose={() => setMenuOpen(false)} goTo={goTo} />
-        <FloatingPlayer hidden={active === S.booking || menuOpen} />
+        <Nav goTo={goTo} light={active === S.booking} />
         <main>
           <ChapterOrigin index={S.origin} setRef={reg(S.origin)} />
-          <Interlude setRef={reg(S.interlude)} />
-          <ChapterServices index={S.services} setRef={reg(S.services)} onBook={bookService} hours={booking.hours} setHours={setHours} />
-          <ChapterExperience index={S.experience} setRef={reg(S.experience)} />
+          <ChapterStudio index={S.studio} setRef={reg(S.studio)} />
+          <ChapterServices index={S.services} setRef={reg(S.services)} onBook={bookService} />
+          <ChapterStatement index={S.statement} setRef={reg(S.statement)} />
           <ChapterBooking setRef={reg(S.booking)} booking={booking} setBooking={setBooking} />
         </main>
       </div>
