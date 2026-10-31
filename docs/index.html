@@ -282,6 +282,7 @@ html, body { background: #050505; margin: 0; }
 @keyframes jv-sweep { from { left: 0 } to { left: 100% } }
 @keyframes jv-pulse { 0%,100% { opacity: .6 } 50% { opacity: 1 } }
 @keyframes jv-hint {0% { transform: translateY(-100%) } 100% { transform: translateY(200%) } }
+@keyframes jv-bob { 0%,100% { transform: translateY(-2px) } 50% { transform: translateY(2px) } }
 @keyframes jv-marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
 @keyframes jv-glitch { 0%,92%,100% { text-shadow: 0 0 34px rgba(225,6,0,.45); transform: none } 93% { text-shadow: -3px 0 rgba(255,255,255,.85), 3px 0 #7a0000; transform: translateX(2px) skewX(-6deg) } 95% { text-shadow: 3px 0 rgba(255,255,255,.7), -3px 0 #7a0000; transform: translateX(-2px) } 97% { text-shadow: 0 0 34px rgba(225,6,0,.45); transform: none } }
 @keyframes jv-morph { 0%,100% { border-radius: 42% 58% 63% 37% / 41% 44% 56% 59% } 50% { border-radius: 58% 42% 38% 62% / 55% 61% 39% 45% } }
@@ -1082,7 +1083,7 @@ function ChapterOrigin({ index, setRef }) {
             </text>
           </svg>
           <span className="absolute inset-[30%] flex items-center justify-center rounded-full bg-[#E10600] text-white transition group-hover:bg-white group-hover:text-[#E10600]">
-            <ArrowDown className="h-4 w-4 [animation:jv-float_1.8s_ease-in-out_infinite] md:h-5 md:w-5" strokeWidth={2.4} />
+            <ArrowDown className="h-4 w-4 [animation:jv-bob_1.6s_ease-in-out_infinite] md:h-5 md:w-5" strokeWidth={2.4} />
           </span>
         </button>
 
