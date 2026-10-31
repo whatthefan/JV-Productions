@@ -26,6 +26,7 @@ Todo está al principio de `src/App.jsx`:
 - `LINKS.instagram` — enlace de Instagram.
 - `IMAGES` — logo, fotos del estudio (`public/img/`) y fotos de ambiente (`public/img/stock/`, ver `CREDITOS-FOTOS.md`).
 - `SERVICES` — textos de cada servicio (título, explicación y qué incluye).
+- `LINKS.spotify` — enlace de Spotify para el reproductor de música (vacío = oculto).
 - `VIDEO` — el vídeo del estudio (`public/videos/jv-studio-edit.mp4`). El original sin editar es `jv-hero.mp4`.
 
 `src/JVSlides.jsx` y `src/JVLanding.jsx` son versiones anteriores, por si quieres comparar.
