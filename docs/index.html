@@ -65,8 +65,8 @@ const MUSIC = { src: "audio/pendiente-sesion-one.m4a", title: "Pendiente — Ses
 
 const VIDEO = {
   // Montaje del estudio (etalonado, con cortes y cierre con logo) hecho a partir de tu vídeo original
-  src: "videos/jv-studio-edit.mp4",
-  poster: "videos/jv-studio-poster.jpg",
+  src: "videos/jv-studio-edit-v2.mp4",
+  poster: "videos/jv-studio-poster-v2.jpg",
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -591,14 +591,15 @@ function Nav({ goTo, light }) {
 function ChapterStudio({ index, setRef }) {
   const root = useRef(null);
   const main = useRef(null);
-  const ambient = useRef(null);
+  const bar = useRef(null);
+  const time = useRef(null);
   const [muted, setMuted] = useState(true);
 
   useProgress(index, (p) => {
     const el = root.current;
     if (!el) return;
-    el.style.setProperty("--v", seg(p, 0, 0.45).toFixed(4)); // el vídeo crece
-    el.style.setProperty("--w", seg(p, 0.25, 0.85).toFixed(4)); // aparecen los textos
+    el.style.setProperty("--v", seg(p, 0, 0.4).toFixed(4)); // el vídeo crece
+    el.style.setProperty("--w", seg(p, 0.2, 0.75).toFixed(4)); // aparecen los textos
   });
 
   // React no sincroniza el atributo muted: se aplica a mano
@@ -609,17 +610,41 @@ function ChapterStudio({ index, setRef }) {
 
   // Solo reproduce mientras la sección está a la vista
   useEffect(() => {
-    const vids = [main.current, ambient.current];
+    const v = main.current;
     const io = new IntersectionObserver(
       ([e]) => {
-        vids.forEach((v) => v && (e.isIntersecting ? v.play().catch(() => {}) : v.pause()));
-        if (!e.isIntersecting) setMuted(true); // al salir, vuelve la música de fondo
+        if (e.isIntersecting) v?.play().catch(() => {});
+        else {
+          v?.pause();
+          setMuted(true); // al salir, vuelve la música de fondo
+        }
       },
       { threshold: 0.05 }
     );
     io.observe(root.current);
     return () => io.disconnect();
   }, []);
+
+  // Barra de progreso y código de tiempo bajo el vídeo
+  useEffect(() => {
+    const v = main.current;
+    if (!v) return;
+    const pad = (n) => String(n).padStart(2, "0");
+    const onTime = () => {
+      const t = v.currentTime || 0;
+      if (bar.current) bar.current.style.transform = `scaleX(${v.duration ? t / v.duration : 0})`;
+      if (time.current) time.current.textContent = `00:${pad(Math.floor(t / 60))}:${pad(Math.floor(t % 60))}`;
+    };
+    v.addEventListener("timeupdate", onTime);
+    return () => v.removeEventListener("timeupdate", onTime);
+  }, []);
+
+  const fullscreen = () => {
+    const v = main.current;
+    if (!v) return;
+    setMuted(false);
+    (v.requestFullscreen || v.webkitEnterFullscreen)?.call(v);
+  };
 
   return (
     <section
@@ -628,35 +653,38 @@ function ChapterStudio({ index, setRef }) {
         setRef(el);
       }}
       aria-label="El estudio"
-      className="relative h-[300vh]"
+      className="relative h-[230vh]"
       style={{ "--v": 0, "--w": 0 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        {/* La luz del propio vídeo, desenfocada, llena el fondo */}
-        <video
-          ref={ambient}
-          src={VIDEO.src}
-          muted
-          autoPlay
-          loop
-          playsInline
-          preload="metadata"
+        {/* Fondo: el póster del vídeo desenfocado (más ligero que un vídeo con blur) */}
+        <img
+          src={VIDEO.poster}
+          alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full scale-125 object-cover blur-[60px]"
-          style={{ opacity: "calc(0.15 + var(--v) * 0.4)" }}
+          className="absolute inset-0 h-full w-full scale-125 object-cover blur-[50px]"
+          style={{ opacity: "calc(0.1 + var(--v) * 0.35)" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/60 to-[#050505]/30" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/70 to-[#050505]/40" />
+        {/* Número de capítulo gigante en contorno */}
+        <span
+          className="pointer-events-none absolute -left-4 bottom-[-14vh] hidden select-none font-['Anton'] text-[34vh] leading-none text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,.07)] md:block"
+          style={{ transform: "translateY(calc((1 - var(--w)) * 8vh))" }}
+          aria-hidden="true"
+        >
+          01
+        </span>
 
-        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center gap-6 px-5 pb-6 pt-24 md:flex-row md:justify-between md:gap-16 md:px-12">
+        <div className="relative z-10 mx-auto flex h-full max-w-7xl flex-col items-center justify-center gap-4 px-5 pb-5 pt-20 md:flex-row md:justify-between md:gap-14 md:px-12 md:pb-8 md:pt-24">
           {/* Texto */}
-          <div className="w-full max-w-md shrink-0 md:order-1">
-            <p className="font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-xl text-[#FF4D4D] md:text-2xl" style={{ opacity: reveal("--enter", 0.5, 0.9) }}>
-              El estudio
+          <div className="w-full max-w-md shrink-0">
+            <p className="flex items-center gap-3 font-['Oswald'] text-lg font-semibold uppercase tracking-[0.08em] text-[#FF4D4D] md:text-2xl" style={{ opacity: reveal("--enter", 0.5, 0.9) }}>
+              <span className="font-['JetBrains_Mono'] text-[11px] font-medium tracking-[0.2em] text-zinc-500 md:text-xs">01 /</span> El estudio
             </p>
-            <h2 className="mt-1 font-['Jost'] text-[clamp(1.8rem,4.6vw,4.2rem)] font-extralight uppercase leading-[1.02] tracking-[0.04em] text-white">
+            <h2 className="mt-1 font-['Jost'] text-[clamp(1.6rem,4.4vw,4.2rem)] font-extralight uppercase leading-[1.02] tracking-[0.04em] text-white">
               <SplitReveal text="Donde nace tu sonido" from={0.55} to={1} letterClass="jv-chrome" />
             </h2>
-            <p className="mt-3 font-['Space_Grotesk'] text-sm uppercase tracking-[0.2em] text-zinc-400" style={{ opacity: reveal("--enter", 0.8, 1) }}>
+            <p className="mt-2 font-['Space_Grotesk'] text-xs uppercase tracking-[0.2em] text-zinc-400 md:mt-3 md:text-sm" style={{ opacity: reveal("--enter", 0.8, 1) }}>
               Detrás del sonido: {TEAM.map((n, i) => (
                 <React.Fragment key={n}>
                   {i > 0 && <span className="mx-2 text-[#E10600]">×</span>}
@@ -664,12 +692,16 @@ function ChapterStudio({ index, setRef }) {
                 </React.Fragment>
               ))}
             </p>
-            <ul className="mt-4 hidden space-y-3 md:mt-8 md:block">
+            <ul className="mt-8 hidden border-t border-white/10 md:block">
               {STUDIO_LINES.map((l, i) => {
-                const t = reveal("--w", (i * 0.25).toFixed(2), (i * 0.25 + 0.35).toFixed(2));
+                const t = reveal("--w", (i * 0.22).toFixed(2), (i * 0.22 + 0.35).toFixed(2));
                 return (
-                  <li key={l} className="flex items-start gap-3 font-['Space_Grotesk'] text-base text-zinc-300" style={{ opacity: t, transform: `translateY(calc((1 - ${t}) * 16px))` }}>
-                    <span className="mt-[11px] h-px w-6 shrink-0 bg-[#E10600]" />
+                  <li
+                    key={l}
+                    className="flex items-baseline gap-5 border-b border-white/10 py-4 font-['Space_Grotesk'] text-base text-zinc-300"
+                    style={{ opacity: t, transform: `translateX(calc((1 - ${t}) * -24px))` }}
+                  >
+                    <span className="font-['JetBrains_Mono'] text-xs text-[#E10600]">0{i + 1}</span>
                     {l}
                   </li>
                 );
@@ -677,35 +709,38 @@ function ChapterStudio({ index, setRef }) {
             </ul>
           </div>
 
-          {/* Vídeo montado en formato vertical */}
+          {/* Vídeo montado, grande */}
           <div
-            className="relative aspect-[9/16] h-[min(62dvh,560px)] shrink-0 overflow-hidden rounded-[28px] border border-white/15 shadow-[0_60px_120px_-30px_rgba(0,0,0,.95)] md:order-2 md:h-[min(80dvh,760px)]"
+            className="flex min-h-0 flex-1 flex-col items-center md:flex-none"
             style={{
-              transform: "perspective(1400px) translateY(calc((1 - var(--v)) * 14dvh)) rotateX(calc((1 - var(--v)) * 12deg)) scale(calc(0.86 + var(--v) * 0.14))",
-              opacity: "calc(0.3 + var(--v) * 0.7)",
+              transform: "perspective(1600px) translateY(calc((1 - var(--v)) * 12dvh)) rotateX(calc((1 - var(--v)) * 10deg)) scale(calc(0.82 + var(--v) * 0.18))",
+              opacity: "calc(0.35 + var(--v) * 0.65)",
             }}
           >
-            <video
-              ref={main}
-              src={VIDEO.src}
-              poster={VIDEO.poster}
-              muted
-              autoPlay
-              loop
-              playsInline
-              preload="metadata"
-              className="h-full w-full object-cover"
-            />
-            <button
-              onClick={() => setMuted((m) => !m)}
-              className={`absolute right-4 top-4 inline-flex items-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 font-[Space_Grotesk] text-xs font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-colors ${
-                muted ? "bg-[#E10600] text-white shadow-[0_0_30px_rgba(225,6,0,.6)]" : "bg-black/60 text-white"
-              }`}
-              aria-label={muted ? "Activar sonido" : "Silenciar"}
-            >
-              {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-              {muted ? "Activar sonido" : "Silenciar"}
-            </button>
+            <div className="relative aspect-[9/16] h-full max-h-[calc(100dvh-230px)] min-h-0 overflow-hidden rounded-[22px] border border-white/15 bg-black shadow-[0_60px_140px_-30px_rgba(0,0,0,.95),0_0_0_1px_rgba(225,6,0,.15)] md:h-[calc(100dvh-170px)] md:max-h-[920px]">
+              <video ref={main} src={VIDEO.src} poster={VIDEO.poster} muted autoPlay loop playsInline preload="metadata" className="h-full w-full object-cover" />
+            </div>
+            {/* Barra bajo el vídeo: tiempo, progreso y pantalla completa */}
+            <div className="mt-3 flex w-full items-center gap-3 font-['JetBrains_Mono'] text-[11px] uppercase tracking-[0.14em] text-zinc-400">
+              <button
+                onClick={() => setMuted((m) => !m)}
+                className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 font-[Space_Grotesk] text-[11px] font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-colors ${
+                  muted ? "bg-[#E10600] text-white shadow-[0_0_30px_rgba(225,6,0,.6)]" : "bg-black/60 text-white"
+                }`}
+                aria-label={muted ? "Activar sonido" : "Silenciar"}
+              >
+                {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+                {muted ? "Activar sonido" : "Silenciar"}
+              </button>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#E10600] [animation:jv-blink_1.2s_steps(1)_infinite]" />
+              <span ref={time}>00:00:00</span>
+              <span className="relative h-px flex-1 overflow-hidden bg-white/15">
+                <span ref={bar} className="absolute inset-0 origin-left scale-x-0 bg-[#E10600]" />
+              </span>
+              <button onClick={fullscreen} className="text-zinc-300 transition hover:text-white">
+                Ver en grande
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -744,7 +779,7 @@ function ChapterServices({ index, setRef, onBook }) {
       }}
       aria-label="Servicios"
       className="relative"
-      style={{ height: `${100 + n * 80}vh`, "--f": 0 }}
+      style={{ height: `${100 + n * 52}vh`, "--f": 0 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden bg-[#050505]">
         {SERVICES.map((s, i) => {
@@ -836,7 +871,7 @@ function ChapterStatement({ index, setRef }) {
         setRef(el);
       }}
       aria-label="Desde la idea hasta el lanzamiento"
-      className="relative h-[280vh]"
+      className="relative h-[210vh]"
       style={{ "--q": 0 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
@@ -953,7 +988,7 @@ function ChapterOrigin({ index, setRef }) {
         setRef(el);
       }}
       aria-label="Origen"
-      className="relative h-[560vh]"
+      className="relative h-[430vh]"
       style={{ "--h": 0, "--a": 0, "--b": 0, "--c": 0, "--d": 0, "--s": 1.8 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
@@ -1009,7 +1044,7 @@ function ChapterOrigin({ index, setRef }) {
           style={{
             transform:
               "translate(-50%, -50%) translate(calc(var(--mx, 0) * -10px), calc(var(--my, 0) * -8px + var(--b) * -18dvh)) scale(calc(1 - var(--b) * 0.5))",
-            opacity: "calc(1 - var(--c) * 1.6)",
+            opacity: "calc(1 - var(--b) * 1.7)",
           }}
         >
           <VampireLogo />
@@ -1304,7 +1339,7 @@ function JVProductions() {
     window.history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const ease = reduce ? 1 : 0.12;
+    const ease = reduce ? 1 : 0.17;
     const docEl = document.documentElement;
     const state = [];
     const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
