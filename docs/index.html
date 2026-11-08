@@ -9,7 +9,7 @@
 </head><body style="margin:0;background:#050505"><div id="root"></div>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useContext, createContext } = React;
-const { ArrowDown, ArrowRight, Check, Minus, Plus, Music, Volume2, VolumeX } = LucideReact;
+const { ArrowDown, ArrowRight, ArrowUp, Check, Minus, Plus, Music, Volume2, VolumeX } = LucideReact;
 /**
  * JV PRODUCTIONS — Web inmersiva guiada por scroll
  * Progresión: el estudio entre la niebla → tus fotos → el vídeo del estudio → los servicios explicados →
@@ -26,9 +26,11 @@ const { createPortal } = ReactDOM;
    ═══════════════════════════════════════════════════════════════ */
 
 const LINKS = {
-  // REEMPLAZAR: tu número con prefijo de país, sin "+", espacios ni guiones (ej: 34612345678)
-  whatsappNumber: "34603247755",
+  // WhatsApp: número con prefijo de país, sin "+" ni espacios (ej: 34612345678).
+  // Vacío = las reservas se envían por Instagram y el número no aparece en la web.
+  whatsappNumber: "",
   instagram: "https://instagram.com/jvproduction",
+  instagramDM: "https://ig.me/m/jvproduction",
   instagramHandle: "@JVPRODUCTION",
   // Música de fondo: pega aquí el enlace de Spotify del artista, álbum o canción
   // (ej: "https://open.spotify.com/artist/XXXX"). Vacío = no se muestra el reproductor.
@@ -75,6 +77,133 @@ const VIDEO = {
    ═══════════════════════════════════════════════════════════════ */
 
 // Orden de las secciones en la página
+/* ═══════════════════════════════════════════════════════════════
+   IDIOMA (ES por defecto; EN traduce con este diccionario)
+   ═══════════════════════════════════════════════════════════════ */
+
+let LANG = "es";
+const tr = (es) => (LANG === "en" && EN[es]) || es;
+
+const EN = {
+  "Productions": "Productions",
+  "Música en Spotify": "Music on Spotify",
+  "Apagar música": "Mute music",
+  "Poner música": "Play music",
+  "◀◀ Rebobinando": "◀◀ Rewinding",
+  "▶▶ Avanzando": "▶▶ Fast-forward",
+  "Inicio": "Home",
+  "El estudio": "The studio",
+  "Servicios": "Services",
+  "Reserva": "Booking",
+  "Rebobinar · Volver arriba ·": "Rewind · Back to top · ",
+  "Volver arriba": "Back to top",
+  "Ir al inicio": "Go to top",
+  "Agendar sesión": "Book a session",
+  "Agendar": "Book",
+  "Cambiar idioma": "Change language",
+  "Donde nace tu sonido": "Where your sound is born",
+  "Detrás del sonido:": "Behind the sound:",
+  "Cabina tratada y equipo profesional.": "Treated vocal booth and pro gear.",
+  "Producción, grabación y mezcla en el mismo sitio.": "Production, recording and mixing under one roof.",
+  "Tu tema, de la primera idea al lanzamiento.": "Your track, from the first idea to release.",
+  "Activar sonido": "Sound on",
+  "Silenciar": "Mute",
+  "Ver en grande": "Full screen",
+  "Cerrar ✕": "Close ✕",
+  "Vídeo del estudio": "Studio video",
+  "Agendar este servicio": "Book this service",
+  "Producción Musical Completa": "Full Music Production",
+  "Creación de Beats Personalizados": "Custom Beat Making",
+  "Grabación de Voces por Horas": "Hourly Vocal Recording",
+  "Mezcla y Mastering": "Mixing & Mastering",
+  "Composición de Letras": "Songwriting",
+  "Diseño de Portadas": "Cover Art Design",
+  "Visualizers": "Visualizers",
+  "Videoclips": "Music Videos",
+  "Distribución Musical": "Music Distribution",
+  "Nos encargamos del tema entero. Tú llegas con la idea y te vas con una canción lista para sacar.": "We handle the whole track. You come in with the idea and leave with a song ready to release.",
+  "Instrumentales exclusivas hechas desde cero para tu voz y tu estilo: trap, reggaetón, R&B o drill.": "Exclusive instrumentals made from scratch for your voice and style: trap, reggaeton, R&B or drill.",
+  "Reserva las horas que necesites en cabina tratada. Te dirigimos la sesión para sacar tu mejor toma.": "Book the hours you need in a treated booth. We direct the session to get your best take.",
+  "Equilibramos cada pista y llevamos tu tema al volumen y la claridad de las plataformas, sin perder pegada.": "We balance every track and bring your song to streaming loudness and clarity, without losing punch.",
+  "Escribimos contigo o pulimos lo que ya tienes: estructura, estribillos que se quedan y barras con identidad.": "We write with you or polish what you have: structure, hooks that stick and bars with identity.",
+  "Portadas con estética de sello para tus singles y álbumes, preparadas para las plataformas y las redes.": "Label-quality covers for your singles and albums, ready for streaming platforms and socials.",
+  "Piezas visuales en bucle que acompañan tu tema en YouTube, Spotify y redes mientras suena.": "Looping visuals that play with your track on YouTube, Spotify and socials.",
+  "Producción audiovisual completa con estética urbana y cinematográfica, de la idea a la edición final.": "Full video production with an urban, cinematic look, from concept to final edit.",
+  "Subimos tu música a Spotify, Apple Music, YouTube Music, TikTok y el resto de tiendas, y te ayudamos con las regalías.": "We release your music on Spotify, Apple Music, YouTube Music, TikTok and every other store, and help you with royalties.",
+  "Dirección artística y referencias": "Creative direction and references",
+  "Instrumental, arreglos y grabación": "Instrumental, arrangement and recording",
+  "Mezcla y master comercial": "Commercial mix and master",
+  "Beat exclusivo a tu medida": "Exclusive beat made for you",
+  "Stems separados por pistas": "Separate track stems",
+  "Ajustes hasta que encaje con tu flow": "Tweaks until it fits your flow",
+  "Ingeniero durante toda la sesión": "Engineer for the whole session",
+  "Dobles, coros y ad-libs": "Doubles, backing vocals and ad-libs",
+  "Archivos limpios al terminar": "Clean files when you finish",
+  "Mezcla de voces e instrumental": "Vocal and instrumental mix",
+  "Master listo para streaming": "Streaming-ready master",
+  "Versiones para escuchar y comparar": "Versions to listen and compare",
+  "Co-writing en sesión": "Co-writing in session",
+  "Melodías y topline": "Melodies and topline",
+  "Estructura completa del tema": "Full song structure",
+  "Concepto y diseño a medida": "Custom concept and design",
+  "Formatos para Spotify y Apple Music": "Formats for Spotify and Apple Music",
+  "Versión para redes sociales": "Social media version",
+  "Visualizer para YouTube": "YouTube visualizer",
+  "Canvas para Spotify": "Spotify Canvas",
+  "Cortes verticales para redes": "Vertical cuts for socials",
+  "Idea, guion y localizaciones": "Concept, script and locations",
+  "Rodaje": "Shooting",
+  "Edición y etalonaje": "Editing and color grading",
+  "Subida a todas las plataformas": "Upload to every platform",
+  "Gestión de regalías": "Royalty management",
+  "Planificación del lanzamiento": "Release planning",
+  "Desde la idea hasta el lanzamiento.": "From the idea to the release.",
+  "Hacemos realidad tu proyecto.": "We make your project real.",
+  "Escucha a": "Listen to",
+  "En rotación": "On rotation",
+  "Reggaetón": "Reggaeton",
+  "El Setup": "The Setup",
+  "En la Zona": "In the Zone",
+  "Tu música": "Your music",
+  "Nuestra producción": "Our production",
+  "Desliza · Entra al estudio ·": "Scroll · Enter the studio · ",
+  "Desliza para entrar": "Scroll to enter",
+  "Suena a disco": "Sounds like a record",
+  "¿Listo para sonar profesional?": "Ready to sound professional?",
+  "Tu mensaje": "Your message",
+  "¿Qué necesitas?": "What do you need?",
+  "Formato": "Format",
+  "¿Cuándo?": "When?",
+  "Grabar Voces": "Vocal Recording",
+  "Producción Completa": "Full Production",
+  "Beat a Medida": "Custom Beat",
+  "Mezcla / Master": "Mix / Master",
+  "Videoclip / Visuals": "Music Video / Visuals",
+  "Letras": "Lyrics",
+  "Portada": "Cover Art",
+  "Distribución": "Distribution",
+  "Sesión por Horas": "Hourly Session",
+  "Proyecto Completo": "Full Project",
+  "Pack Lanzamiento": "Release Pack",
+  "Esta semana": "This week",
+  "Próxima semana": "Next week",
+  "Urgente": "Urgent",
+  "Tu nombre artístico (opcional)": "Your artist name (optional)",
+  "Nombre artístico": "Artist name",
+  "Menos horas": "Fewer hours",
+  "Más horas": "More hours",
+  "Agendar por WhatsApp ahora": "Book on WhatsApp now",
+  "Enviar por Instagram": "Send via Instagram",
+  "Elige al menos un servicio": "Pick at least one service",
+  "Mensaje copiado: pégalo en el chat de Instagram que se ha abierto.": "Message copied: paste it into the Instagram chat that just opened.",
+};
+
+const MANIFESTO_EN = [
+  "Your", "music,", "our", { em: "production." }, "From", "the", "first", "beat", { img: "img/stock/px-mic.jpg" },
+  "to", "the", "final", "mix", { img: "img/stock/px-camera.jpg" }, "we", "create", "the", "sound", "that",
+  "puts", "you", "on", "the", { em: "map." }, { img: "img/stock/px-rapper.jpg" },
+];
+
 const S = { origin: 0, studio: 1, services: 2, statement: 3, booking: 4 };
 
 const FAN = [
@@ -283,6 +412,9 @@ html, body { background: #050505; margin: 0; }
 @keyframes jv-sweep { from { left: 0 } to { left: 100% } }
 @keyframes jv-pulse { 0%,100% { opacity: .6 } 50% { opacity: 1 } }
 @keyframes jv-hint {0% { transform: translateY(-100%) } 100% { transform: translateY(200%) } }
+@keyframes jv-ping { 0% { transform: scale(.7); opacity: .9 } 100% { transform: scale(1.9); opacity: 0 } }
+@keyframes jv-breathe { 0%,100% { transform: scale(1) } 50% { transform: scale(1.035) } }
+@keyframes jv-track { from { top: -15% } to { top: 110% } }
 @keyframes jv-bob { 0%,100% { transform: translateY(-2px) } 50% { transform: translateY(2px) } }
 @keyframes jv-marquee { from { transform: translateX(0) } to { transform: translateX(-50%) } }
 @keyframes jv-glitch { 0%,92%,100% { text-shadow: 0 0 34px rgba(225,6,0,.45); transform: none } 93% { text-shadow: -3px 0 rgba(255,255,255,.85), 3px 0 #7a0000; transform: translateX(2px) skewX(-6deg) } 95% { text-shadow: 3px 0 rgba(255,255,255,.7), -3px 0 #7a0000; transform: translateX(-2px) } 97% { text-shadow: 0 0 34px rgba(225,6,0,.45); transform: none } }
@@ -455,14 +587,37 @@ function VampireLogo({ className = "" }) {
           <path d={PISTOL} fill="#0a0a0a" stroke="rgba(255,255,255,.55)" strokeWidth="1.4" />
         </g>
       </svg>
-      {/* Halo blanco tenue */}
-      <div className="absolute inset-[18%] rounded-full bg-white/10 blur-[60px]" />
+      {/* Halo rojo que late y ondas de sonido que salen del logo */}
+      <div className="absolute inset-[14%] rounded-full bg-[#E10600]/35 blur-[70px] [animation:jv-pulse_2.4s_ease-in-out_infinite]" />
+      {[0, 1, 2].map((k) => (
+        <span
+          key={k}
+          className="absolute inset-[22%] rounded-full border border-[#E10600]/60"
+          style={{ animation: `jv-ping 3.6s cubic-bezier(.2,.6,.3,1) ${k * 1.2}s infinite` }}
+        />
+      ))}
       <img
         src={IMAGES.logoVampire}
         alt="JV Productions"
-        className="relative h-full w-full object-contain"
-        style={{ filter: "drop-shadow(0 6px 14px rgba(0,0,0,.9))" }}
+        className="relative h-full w-full object-contain [animation:jv-breathe_4.8s_ease-in-out_infinite]"
+        style={{ filter: "drop-shadow(0 0 22px rgba(225,6,0,.55)) drop-shadow(0 10px 18px rgba(0,0,0,.9))" }}
       />
+      {/* Destello de luz que recorre el logo */}
+      <div
+        className="pointer-events-none absolute inset-0 mix-blend-overlay [animation:jv-breathe_4.8s_ease-in-out_infinite]"
+        style={{
+          WebkitMaskImage: `url(${IMAGES.logoVampire})`,
+          maskImage: `url(${IMAGES.logoVampire})`,
+          WebkitMaskSize: "contain",
+          maskSize: "contain",
+          WebkitMaskRepeat: "no-repeat",
+          maskRepeat: "no-repeat",
+          WebkitMaskPosition: "center",
+          maskPosition: "center",
+        }}
+      >
+        <div className="absolute inset-0 bg-[linear-gradient(105deg,transparent_38%,rgba(255,255,255,.95)_50%,transparent_62%)] bg-[length:260%_100%] [animation:jv-shine_5s_ease-in-out_infinite]" />
+      </div>
     </div>
   );
 }
@@ -473,7 +628,7 @@ function SpotifyPlayer({ className = "", tall = false }) {
   if (!m) return null;
   return (
     <iframe
-      title="Música en Spotify"
+      title={tr("Música en Spotify")}
       src={`https://open.spotify.com/embed/${m[1]}/${m[2]}?theme=0`}
       className={`${tall ? "h-[232px] md:h-[352px]" : "h-[152px]"} w-full rounded-2xl border-0 ${className}`}
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
@@ -543,14 +698,14 @@ function BackgroundMusic() {
           wanted.current = !on;
           sync();
         }}
-        aria-label={on ? "Apagar música" : "Poner música"}
+        aria-label={tr(on ? "Apagar música" : "Poner música")}
         title={MUSIC.title}
         className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md md:h-11 md:w-11"
       >
         {on ? (
           <span className="flex h-3.5 items-end gap-[2px]" aria-hidden="true">
             {[0, 1, 2, 3].map((i) => (
-              <span key={i} className="w-[3px] origin-bottom rounded-full bg-[#E10600]" style={{ height: "100%", animation: `jv-eq s ease-in-out -es infinite` }} />
+              <span key={i} className="w-[3px] origin-bottom rounded-full bg-[#E10600]" style={{ height: "100%", animation: `jv-eq ${0.7 + i * 0.13}s ease-in-out -${i * 0.21}s infinite` }} />
             ))}
           </span>
         ) : (
@@ -561,25 +716,575 @@ function BackgroundMusic() {
   );
 }
 
-function Nav({ goTo, light }) {
+/* ═══════════════════════════════════════════════════════════════
+   3D Y VIAJES (Three.js se carga solo cuando hace falta)
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Estado compartido con la capa 3D: velocidad del viaje (0–1) y sentido (1 baja, -1 sube) */
+const FX = { warp: 0, dir: 1 };
+
+const TRAVEL_LABELS = ["Inicio", "El estudio", "Servicios", "Vigora", "Reserva"];
+
+let threePromise = null;
+function loadThree() {
+  if (window.THREE) return Promise.resolve(window.THREE);
+  if (!threePromise) {
+    threePromise = new Promise((resolve, reject) => {
+      const s = document.createElement("script");
+      s.src = "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js";
+      s.onload = () => resolve(window.THREE);
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+  return threePromise;
+}
+
+/** Punto suave para las brasas */
+function dotTexture(THREE) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 64;
+  const g = c.getContext("2d");
+  const r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, "rgba(255,255,255,1)");
+  r.addColorStop(0.25, "rgba(255,255,255,.55)");
+  r.addColorStop(1, "rgba(255,255,255,0)");
+  g.fillStyle = r;
+  g.fillRect(0, 0, 64, 64);
+  return new THREE.CanvasTexture(c);
+}
+
+/** Mundo 3D que acompaña toda la página: brasas rojas, anillos de onda y estelas cuando viajas */
+function World3D() {
+  const host = useRef(null);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let alive = true;
+    let cleanup = () => {};
+
+    loadThree()
+      .then((THREE) => {
+        if (!alive || !host.current) return;
+        const el = host.current;
+        const small = window.innerWidth < 768;
+        const DEPTH = 240;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: "low-power" });
+        renderer.setPixelRatio(small ? 1 : Math.min(window.devicePixelRatio, 1.5));
+        renderer.setClearColor(0x000000, 0);
+        renderer.domElement.style.cssText = "width:100%;height:100%;display:block";
+        el.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x000000, 0.034);
+        const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 140);
+
+        // Brasas: un túnel de partículas rojas y alguna blanca
+        const N = small ? 420 : 900;
+        const pos = new Float32Array(N * 3);
+        const col = new Float32Array(N * 3);
+        for (let i = 0; i < N; i++) {
+          const r = 2.2 + Math.random() * 10;
+          const a = Math.random() * Math.PI * 2;
+          pos.set([Math.cos(a) * r, Math.sin(a) * r * 0.75, 8 - Math.random() * DEPTH], i * 3);
+          const hot = Math.random() < 0.18;
+          col.set(hot ? [1, 0.82, 0.78] : [0.75 + Math.random() * 0.25, 0.02 + Math.random() * 0.06, 0.02], i * 3);
+        }
+        const emberGeo = new THREE.BufferGeometry();
+        emberGeo.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+        emberGeo.setAttribute("color", new THREE.BufferAttribute(col, 3));
+        const dot = dotTexture(THREE);
+        const emberMat = new THREE.PointsMaterial({
+          size: small ? 0.2 : 0.16,
+          map: dot,
+          vertexColors: true,
+          transparent: true,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        });
+        const embers = new THREE.Points(emberGeo, emberMat);
+        scene.add(embers);
+
+        // Anillos de onda: como si la página fuera el interior de un altavoz
+        const ringMat = new THREE.LineBasicMaterial({ color: 0xe10600, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
+        const rings = [];
+        for (let k = 0; k < 30; k++) {
+          const pts = [];
+          const R = 7 + (k % 3) * 1.4;
+          const wobble = 0.12 + Math.random() * 0.25;
+          const freq = 3 + (k % 5);
+          for (let j = 0; j <= 160; j++) {
+            const a = (j / 160) * Math.PI * 2;
+            const rr = R + Math.sin(a * freq + k) * wobble;
+            pts.push(new THREE.Vector3(Math.cos(a) * rr, Math.sin(a) * rr * 0.75, 0));
+          }
+          const ring = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), ringMat);
+          ring.position.z = -12 - k * 8;
+          ring.rotation.z = Math.random() * Math.PI;
+          scene.add(ring);
+          rings.push(ring);
+        }
+
+        // Estelas de velocidad: solo se ven cuando la página viaja
+        const M = small ? 140 : 260;
+        const sPos = new Float32Array(M * 6);
+        const base = Array.from({ length: M }, () => {
+          const r = 1.6 + Math.random() * 7;
+          const a = Math.random() * Math.PI * 2;
+          return [Math.cos(a) * r, Math.sin(a) * r * 0.75, Math.random() * 80];
+        });
+        const streakGeo = new THREE.BufferGeometry();
+        streakGeo.setAttribute("position", new THREE.BufferAttribute(sPos, 3));
+        const streakMat = new THREE.LineBasicMaterial({ color: 0xff3b30, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+        scene.add(new THREE.LineSegments(streakGeo, streakMat));
+
+        const resize = () => {
+          const w = window.innerWidth;
+          const h = window.innerHeight;
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+        };
+        resize();
+
+        const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+        const onMove = (e) => {
+          mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+          mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+        };
+
+        let raf = 0;
+        let last = performance.now();
+        let lastY = window.scrollY;
+        let camZ = 0;
+        let vel = 0;
+        let warp = 0;
+        let flow = 0;
+
+        const loop = (now) => {
+          raf = requestAnimationFrame(loop);
+          const dt = Math.min(0.05, (now - last) / 1000);
+          last = now;
+          const t = now / 1000;
+          const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+          const y = window.scrollY;
+          const speed = Math.min(1, (Math.abs(y - lastY) / window.innerHeight) * 5);
+          lastY = y;
+          vel += (speed - vel) * 0.12;
+          warp += (Math.max(FX.warp, vel * 0.55) - warp) * 0.15;
+
+          // La cámara avanza por el túnel según lo que llevas de página
+          camZ += (-(y / max) * (DEPTH - 40) - camZ) * 0.09;
+          mouse.sx += (mouse.x - mouse.sx) * 0.05;
+          mouse.sy += (mouse.y - mouse.sy) * 0.05;
+          camera.position.set(mouse.sx * 0.9, -mouse.sy * 0.6, camZ + 6);
+          camera.lookAt(mouse.sx * 0.25, -mouse.sy * 0.15, camZ - 20);
+          camera.rotation.z = Math.sin(t * 0.15) * 0.04 + FX.dir * warp * 0.06;
+          camera.fov = 62 + warp * 24;
+          camera.updateProjectionMatrix();
+
+          embers.rotation.z = t * 0.025;
+          embers.position.y = Math.sin(t * 0.3) * 0.25;
+          emberMat.size = (small ? 0.2 : 0.16) * (1 + warp * 0.8);
+
+          rings.forEach((r, k) => {
+            r.rotation.z += (k % 2 ? 1 : -1) * (0.0015 + warp * 0.02);
+            r.scale.setScalar(1 + Math.sin(t * 1.7 + k * 0.8) * 0.035 + warp * 0.25);
+          });
+          ringMat.opacity = 0.13 + warp * 0.3;
+
+          flow += dt * (6 + warp * 160);
+          const len = 0.3 + warp * 14;
+          for (let j = 0; j < M; j++) {
+            const [bx, by, bz] = base[j];
+            const z = camZ + 6 - ((bz + flow) % 80) - 1;
+            sPos.set([bx, by, z, bx, by, z - len], j * 6);
+          }
+          streakGeo.attributes.position.needsUpdate = true;
+          streakMat.opacity = warp * 0.85;
+
+          renderer.render(scene, camera);
+        };
+        raf = requestAnimationFrame(loop);
+
+        window.addEventListener("resize", resize);
+        window.addEventListener("pointermove", onMove, { passive: true });
+        cleanup = () => {
+          cancelAnimationFrame(raf);
+          window.removeEventListener("resize", resize);
+          window.removeEventListener("pointermove", onMove);
+          renderer.dispose();
+          renderer.domElement.remove();
+        };
+      })
+      .catch(() => {});
+
+    return () => {
+      alive = false;
+      cleanup();
+    };
+  }, []);
+
+  return <div ref={host} className="pointer-events-none fixed inset-0 z-[60] opacity-80 mix-blend-screen" aria-hidden="true" />;
+}
+
+/** Tocadiscos 3D con el vinilo de JV: gira, refleja la luz y se inclina con el ratón y el scroll */
+function Vinyl3D({ className = "" }) {
+  const host = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    let cleanup = () => {};
+
+    // En móvil el tocadiscos no se muestra: ni se carga
+    if (!window.matchMedia("(min-width: 768px)").matches) return;
+    loadThree()
+      .then((THREE) => {
+        if (!alive || !host.current) return;
+        const el = host.current;
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.setClearColor(0x000000, 0);
+        renderer.domElement.style.cssText = "width:100%;height:100%;display:block";
+        el.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
+        camera.position.set(0.1, 3.5, 5.6);
+        camera.lookAt(0.1, -0.1, 0);
+
+        // Cara del disco dibujada en un canvas: surcos, pista lisa y etiqueta roja con el logo
+        const c = document.createElement("canvas");
+        c.width = c.height = 1024;
+        const g = c.getContext("2d");
+        const logo = new Image();
+        logo.crossOrigin = "anonymous";
+        const paint = () => {
+          g.clearRect(0, 0, 1024, 1024);
+          g.fillStyle = "#070707";
+          g.beginPath();
+          g.arc(512, 512, 512, 0, Math.PI * 2);
+          g.fill();
+          for (let r = 180; r < 505; r += 1.6) {
+            const gap = (r > 300 && r < 306) || (r > 395 && r < 401);
+            g.strokeStyle = gap ? "rgba(0,0,0,.9)" : `rgba(255,255,255,${0.025 + Math.random() * 0.045})`;
+            g.lineWidth = gap ? 2.6 : 0.8;
+            g.beginPath();
+            g.arc(512, 512, r, 0, Math.PI * 2);
+            g.stroke();
+          }
+          g.fillStyle = "#c70500";
+          g.beginPath();
+          g.arc(512, 512, 172, 0, Math.PI * 2);
+          g.fill();
+          g.strokeStyle = "rgba(0,0,0,.35)";
+          g.lineWidth = 3;
+          g.beginPath();
+          g.arc(512, 512, 160, 0, Math.PI * 2);
+          g.stroke();
+          if (logo.complete && logo.naturalWidth) {
+            const o = document.createElement("canvas");
+            o.width = o.height = 220;
+            const og = o.getContext("2d");
+            og.drawImage(logo, 0, 0, 220, 220 * (logo.naturalHeight / logo.naturalWidth));
+            og.globalCompositeOperation = "source-in";
+            og.fillStyle = "#fff";
+            og.fillRect(0, 0, 220, 220);
+            g.drawImage(o, 402, 372);
+          }
+          g.fillStyle = "#fff";
+          g.textAlign = "center";
+          g.font = "600 22px Oswald, sans-serif";
+          g.fillText("VIGORA · LADO A", 512, 610);
+          g.font = "500 15px Oswald, sans-serif";
+          g.fillStyle = "rgba(255,255,255,.7)";
+          g.fillText("JV PRODUCTIONS — 33⅓ RPM", 512, 636);
+          g.fillStyle = "#000";
+          g.beginPath();
+          g.arc(512, 512, 9, 0, Math.PI * 2);
+          g.fill();
+          tex.needsUpdate = true;
+        };
+        const tex = new THREE.CanvasTexture(c);
+        tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        logo.onload = paint;
+        logo.src = IMAGES.logoVampire;
+        paint();
+
+        const rig = new THREE.Group();
+        scene.add(rig);
+
+        // Plato metálico debajo del disco
+        const metal = new THREE.MeshStandardMaterial({ color: 0x9aa0a8, metalness: 0.9, roughness: 0.32 });
+        const platter = new THREE.Mesh(new THREE.CylinderGeometry(1.06, 1.06, 0.07, 96), new THREE.MeshStandardMaterial({ color: 0x1b1b1d, metalness: 0.7, roughness: 0.4 }));
+        platter.position.y = -0.05;
+        rig.add(platter);
+
+        const disc = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.022, 128), [
+          new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.5 }),
+          new THREE.MeshStandardMaterial({ map: tex, roughness: 0.28, metalness: 0.25 }),
+          new THREE.MeshStandardMaterial({ color: 0x050505 }),
+        ]);
+        rig.add(disc);
+
+        const spindle = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.08, 16), metal);
+        spindle.position.y = 0.04;
+        rig.add(spindle);
+
+        // Brazo: pivote, tubo y cápsula apoyada sobre el surco
+        const arm = new THREE.Group();
+        arm.position.set(1.2, 0.02, -0.8);
+        const pivot = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.16, 32), metal);
+        pivot.position.y = 0.05;
+        arm.add(pivot);
+        const weight = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.14, 24), new THREE.MeshStandardMaterial({ color: 0x222226, metalness: 0.8, roughness: 0.35 }));
+        weight.rotation.z = Math.PI / 2;
+        weight.position.set(-0.22, 0.14, 0);
+        arm.add(weight);
+        const target = new THREE.Vector3(0.32, 0, 0.46);
+        const dx = target.x - arm.position.x;
+        const dz = target.z - arm.position.z;
+        const L = Math.hypot(dx, dz);
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, L, 12), metal);
+        tube.rotation.z = Math.PI / 2;
+        tube.position.set(L / 2, 0.14, 0);
+        arm.add(tube);
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.04, 0.09), new THREE.MeshStandardMaterial({ color: 0xe10600, metalness: 0.4, roughness: 0.35 }));
+        head.position.set(L + 0.03, 0.08, 0);
+        arm.add(head);
+        const baseAngle = Math.atan2(-dz, dx);
+        arm.rotation.y = baseAngle;
+        rig.add(arm);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.28));
+        const key = new THREE.DirectionalLight(0xffffff, 0.9);
+        key.position.set(2, 4, 2);
+        scene.add(key);
+        const red = new THREE.PointLight(0xe10600, 2.4, 12);
+        red.position.set(-2.4, 1.6, 1);
+        scene.add(red);
+        const shine = new THREE.PointLight(0xffffff, 1.4, 6);
+        scene.add(shine);
+
+        const resize = () => {
+          const w = el.clientWidth || 1;
+          const h = el.clientHeight || 1;
+          renderer.setSize(w, h, false);
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+        };
+        resize();
+        const ro = new ResizeObserver(resize);
+        ro.observe(el);
+
+        const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
+        const onMove = (e) => {
+          mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+          mouse.y = (e.clientY / window.innerHeight) * 2 - 1;
+        };
+        window.addEventListener("pointermove", onMove, { passive: true });
+
+        let visible = true;
+        const io = new IntersectionObserver(([en]) => (visible = en.isIntersecting));
+        io.observe(el);
+
+        let raf = 0;
+        const loop = (now) => {
+          raf = requestAnimationFrame(loop);
+          if (!visible) return;
+          const t = now / 1000;
+          mouse.sx += (mouse.x - mouse.sx) * 0.06;
+          mouse.sy += (mouse.y - mouse.sy) * 0.06;
+          if (!reduce) disc.rotation.y -= 0.03;
+          rig.rotation.x = 0.12 + mouse.sy * 0.1;
+          rig.rotation.z = -mouse.sx * 0.06;
+          rig.rotation.y = mouse.sx * 0.14 + Math.sin(t * 0.4) * 0.05;
+          arm.rotation.y = baseAngle + Math.sin(t * 2.1) * 0.004;
+          shine.position.set(Math.cos(t * 0.7) * 1.6, 1.2, Math.sin(t * 0.7) * 1.6);
+          renderer.render(scene, camera);
+        };
+        raf = requestAnimationFrame(loop);
+
+        cleanup = () => {
+          cancelAnimationFrame(raf);
+          ro.disconnect();
+          io.disconnect();
+          window.removeEventListener("pointermove", onMove);
+          renderer.dispose();
+          renderer.domElement.remove();
+        };
+      })
+      .catch(() => {});
+
+    return () => {
+      alive = false;
+      cleanup();
+    };
+  }, []);
+
+  return <div ref={host} className={className} aria-hidden="true" />;
+}
+
+/** Pantalla de viaje: al saltar por la página se rebobina (o avanza) como una cinta, sección a sección */
+function TravelHUD() {
+  const [trip, setTrip] = useState(null);
+  const head = useRef(null);
+  const time = useRef(null);
+  const [passed, setPassed] = useState(-1);
+
+  useEffect(() => {
+    const on = (e) => setTrip(e.detail.on ? e.detail : (t) => (t ? { ...t, on: false } : null));
+    window.addEventListener("jv-travel", on);
+    return () => window.removeEventListener("jv-travel", on);
+  }, []);
+
+  useEffect(() => {
+    if (!trip?.on) return;
+    let raf = 0;
+    const loop = () => {
+      raf = requestAnimationFrame(loop);
+      const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+      const p = window.scrollY / max;
+      if (head.current) head.current.style.top = `${p * 100}%`;
+      if (time.current) {
+        const s = p * 312;
+        const f = Math.floor((s % 1) * 25);
+        time.current.textContent = `00:${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}:${String(f).padStart(2, "0")}`;
+      }
+      let k = 0;
+      trip.stops.forEach((s, i) => p >= s - 0.002 && (k = i));
+      setPassed((x) => (x === k ? x : k));
+    };
+    loop();
+    return () => cancelAnimationFrame(raf);
+  }, [trip]);
+
+  const show = !!trip?.on;
+  const up = trip?.dir < 0;
+
+  return (
+    <div className={`pointer-events-none fixed inset-0 z-[80] transition-opacity duration-300 ${show ? "opacity-100" : "opacity-0"}`} aria-hidden="true">
+      <div className="absolute inset-0 bg-black/45 bg-[radial-gradient(ellipse_at_center,transparent_35%,rgba(120,0,0,.5)_100%)]" />
+      <div className="absolute inset-0 opacity-30 [background:repeating-linear-gradient(0deg,rgba(255,255,255,.07)_0_1px,transparent_1px_3px)]" />
+      {show && <div className="absolute inset-x-0 h-24 bg-gradient-to-b from-transparent via-white/[0.07] to-transparent blur-sm [animation:jv-track_.9s_linear_infinite]" />}
+
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
+        <p className="font-['Anton'] text-[clamp(2.4rem,7vw,6rem)] uppercase leading-none text-white [animation:jv-glitch_1.4s_steps(1)_infinite]">
+          {tr(up ? "◀◀ Rebobinando" : "▶▶ Avanzando")}
+        </p>
+        <p className="mt-3 font-['JetBrains_Mono'] text-xs uppercase tracking-[0.3em] text-[#FF4D4D] md:text-sm">
+          <span className="mr-2 inline-block h-2 w-2 rounded-full bg-[#E10600] align-middle [animation:jv-blink_.6s_steps(1)_infinite]" />
+          <span ref={time}>00:00:00:00</span> · {tr(TRAVEL_LABELS[passed] || "")}
+        </p>
+      </div>
+
+      {/* Cinta lateral con las paradas de la página */}
+      <div className="absolute bottom-[14%] right-6 top-[14%] w-px bg-white/20 md:right-12">
+        {(trip?.stops || []).map((s, i) => (
+          <div key={i} className="absolute right-0 flex -translate-y-1/2 items-center gap-3" style={{ top: `${s * 100}%` }}>
+            <span className={`font-['Oswald'] text-[10px] font-medium uppercase tracking-[0.2em] transition-colors md:text-xs ${passed === i ? "text-white" : "text-white/35"}`}>{tr(TRAVEL_LABELS[i])}</span>
+            <span className={`h-2 w-2 translate-x-1/2 rounded-full ${passed === i ? "bg-[#E10600]" : "bg-white/40"}`} />
+          </div>
+        ))}
+        <div ref={head} className="absolute -left-[7px] h-[15px] w-[15px] -translate-y-1/2 rounded-full border-2 border-white bg-[#E10600] shadow-[0_0_20px_#E10600]" />
+      </div>
+    </div>
+  );
+}
+
+/** Botón flotante para volver arriba: rebobina toda la página */
+function BackToTop({ onClick }) {
+  const [show, setShow] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setShow(window.scrollY > window.innerHeight * 1.2);
+    const onTrip = (e) => setBusy(e.detail.on);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("jv-travel", onTrip);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("jv-travel", onTrip);
+    };
+  }, []);
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={tr("Volver arriba")}
+      className={`group fixed bottom-8 right-8 z-[75] hidden h-[92px] w-[92px] transition-all md:block duration-500 ${
+        show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
+      }`}
+    >
+      <svg viewBox="0 0 100 100" className={`absolute inset-0 h-full w-full ${busy ? "[animation:jv-spin_.8s_linear_infinite_reverse]" : "[animation:jv-spin_16s_linear_infinite]"}`} aria-hidden="true">
+        <defs>
+          <path id="jv-ring-top" d="M50 50 m-38 0 a38 38 0 1 1 76 0 a38 38 0 1 1 -76 0" />
+        </defs>
+        <circle cx="50" cy="50" r="47" fill="rgba(5,5,5,.55)" />
+        <text fill="rgba(255,255,255,.8)" style={{ font: "600 9.4px Oswald, sans-serif", letterSpacing: "2.6px", textTransform: "uppercase" }}>
+          <textPath href="#jv-ring-top" textLength="236" lengthAdjust="spacing">{tr("Rebobinar · Volver arriba ·")}</textPath>
+        </text>
+      </svg>
+      <span className="absolute inset-[30%] flex items-center justify-center rounded-full bg-[#E10600] text-white shadow-[0_0_24px_rgba(225,6,0,.6)] transition group-hover:bg-white group-hover:text-[#E10600]">
+        <ArrowUp className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 md:h-5 md:w-5" strokeWidth={2.4} />
+      </span>
+    </button>
+  );
+}
+
+function Nav({ goTo, light, lang, setLang }) {
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => {
+    const on = () => setScrolled(window.scrollY > window.innerHeight * 1.2);
+    on();
+    window.addEventListener("scroll", on, { passive: true });
+    return () => window.removeEventListener("scroll", on);
+  }, []);
+  const pill = "pointer-events-auto grid h-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md md:h-11";
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex items-center justify-between px-4 py-4 md:px-10 md:py-7">
-      <button onClick={() => goTo(S.origin)} className="pointer-events-auto flex items-center gap-3" aria-label="Ir al inicio">
+      <button onClick={() => goTo(S.origin)} className="pointer-events-auto flex items-center gap-3" aria-label={tr("Ir al inicio")}>
         <Logo className="h-9 md:h-11" />
         <span className={`hidden font-['Jost'] text-[11px] font-light uppercase tracking-[0.5em] transition-colors duration-500 sm:inline ${light ? "text-black/70" : "text-white/80"}`}>
           JV Productions
         </span>
       </button>
-      <div className="flex items-center gap-2 md:gap-3">
+      <div className="flex items-center gap-1.5 md:gap-3">
+      <button
+        onClick={() => goTo(S.origin)}
+        aria-label={tr("Volver arriba")}
+        className={`${pill} w-10 transition-all duration-500 md:hidden ${scrolled ? "opacity-100" : "pointer-events-none w-0 scale-50 border-0 opacity-0"}`}
+      >
+        <ArrowUp className="h-4 w-4" strokeWidth={2.4} />
+      </button>
+      <button
+        onClick={() => setLang(lang === "es" ? "en" : "es")}
+        aria-label={tr("Cambiar idioma")}
+        className={`${pill} px-3 font-['JetBrains_Mono'] text-[11px] font-medium tracking-[0.1em]`}
+      >
+        <span>
+          <span className={lang === "es" ? "text-white" : "text-white/40"}>ES</span>
+          <span className="mx-1 text-[#E10600]">/</span>
+          <span className={lang === "en" ? "text-white" : "text-white/40"}>EN</span>
+        </span>
+      </button>
       <BackgroundMusic />
       <button
         onClick={() => goTo(S.booking)}
-        className={`pointer-events-auto group relative overflow-hidden rounded-full border px-5 py-2.5 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-colors duration-500 md:px-7 md:py-3 ${
+        className={`pointer-events-auto group relative overflow-hidden rounded-full border px-4 py-2.5 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-colors duration-500 md:px-7 md:py-3 ${
           light ? "border-black/20 bg-white/40 text-black" : "border-white/20 bg-black/40 text-white"
         }`}
       >
         <span className="absolute inset-0 translate-y-full rounded-full bg-[#E10600] transition-transform duration-500 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-y-0" />
-        <span className="relative transition-colors duration-500 group-hover:text-black">Agendar sesión</span>
+        <span className="relative transition-colors duration-500 group-hover:text-black">
+          <span className="md:hidden">{tr("Agendar")}</span>
+          <span className="hidden md:inline">{tr("Agendar sesión")}</span>
+        </span>
       </button>
       </div>
     </header>
@@ -691,7 +1396,7 @@ function ChapterStudio({ index, setRef }) {
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
         {big &&
           createPortal(
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Vídeo del estudio" onClick={closeBig}>
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={tr("Vídeo del estudio")} onClick={closeBig}>
             <video
               ref={bigVideo}
               src={VIDEO.src}
@@ -706,7 +1411,7 @@ function ChapterStudio({ index, setRef }) {
               onClick={closeBig}
               className="absolute right-4 top-4 rounded-full border border-white/20 bg-black/70 px-4 py-2.5 font-['JetBrains_Mono'] text-[11px] uppercase tracking-[0.16em] text-white transition hover:bg-[#E10600] md:right-8 md:top-8"
             >
-              Cerrar ✕
+              {tr("Cerrar ✕")}
             </button>
           </div>,
           document.body
@@ -733,13 +1438,13 @@ function ChapterStudio({ index, setRef }) {
           {/* Texto */}
           <div className="w-full max-w-md shrink-0">
             <p className="flex items-center gap-3 font-['Oswald'] text-lg font-semibold uppercase tracking-[0.08em] text-[#FF4D4D] md:text-2xl" style={{ opacity: reveal("--enter", 0.5, 0.9) }}>
-              <span className="font-['JetBrains_Mono'] text-[11px] font-medium tracking-[0.2em] text-zinc-500 md:text-xs">01 /</span> El estudio
+              <span className="font-['JetBrains_Mono'] text-[11px] font-medium tracking-[0.2em] text-zinc-500 md:text-xs">01 /</span> {tr("El estudio")}
             </p>
             <h2 className="mt-1 font-['Jost'] text-[clamp(1.6rem,4.4vw,4.2rem)] font-extralight uppercase leading-[1.02] tracking-[0.04em] text-white">
-              <SplitReveal text="Donde nace tu sonido" from={0.55} to={1} letterClass="jv-chrome" />
+              <SplitReveal key={LANG} text={tr("Donde nace tu sonido")} from={0.55} to={1} letterClass="jv-chrome" />
             </h2>
             <p className="mt-2 font-['Space_Grotesk'] text-xs uppercase tracking-[0.2em] text-zinc-400 md:mt-3 md:text-sm" style={{ opacity: reveal("--enter", 0.8, 1) }}>
-              Detrás del sonido: {TEAM.map((n, i) => (
+              {tr("Detrás del sonido:")} {TEAM.map((n, i) => (
                 <React.Fragment key={n}>
                   {i > 0 && <span className="mx-2 text-[#E10600]">×</span>}
                   <span className="text-white">{n}</span>
@@ -756,7 +1461,7 @@ function ChapterStudio({ index, setRef }) {
                     style={{ opacity: t, transform: `translateX(calc((1 - ${t}) * -24px))` }}
                   >
                     <span className="font-['JetBrains_Mono'] text-xs text-[#E10600]">0{i + 1}</span>
-                    {l}
+                    {tr(l)}
                   </li>
                 );
               })}
@@ -781,10 +1486,10 @@ function ChapterStudio({ index, setRef }) {
                 className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 font-[Space_Grotesk] text-[11px] font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-colors ${
                   muted ? "bg-[#E10600] text-white shadow-[0_0_30px_rgba(225,6,0,.6)]" : "bg-black/60 text-white"
                 }`}
-                aria-label={muted ? "Activar sonido" : "Silenciar"}
+                aria-label={tr(muted ? "Activar sonido" : "Silenciar")}
               >
                 {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-                {muted ? "Activar sonido" : "Silenciar"}
+                {tr(muted ? "Activar sonido" : "Silenciar")}
               </button>
               <span className="h-1.5 w-1.5 rounded-full bg-[#E10600] [animation:jv-blink_1.2s_steps(1)_infinite]" />
               <span ref={time}>00:00:00</span>
@@ -792,7 +1497,7 @@ function ChapterStudio({ index, setRef }) {
                 <span ref={bar} className="absolute inset-0 origin-left scale-x-0 bg-[#E10600]" />
               </span>
               <button onClick={openBig} className="text-zinc-300 transition hover:text-white">
-                Ver en grande
+                {tr("Ver en grande")}
               </button>
             </div>
           </div>
@@ -847,14 +1552,14 @@ function ChapterServices({ index, setRef, onBook }) {
 
               <div className="relative flex h-full items-end px-5 pb-10 pt-24 md:items-center md:px-16 md:pb-0">
                 <div className="max-w-xl" style={{ opacity: here, transform: `translateY(calc((1 - ${here}) * 30px))` }}>
-                  <p className="font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-lg text-[#FF4D4D] md:text-2xl">Servicios</p>
-                  <h3 className="mt-1 font-['Jost'] text-[clamp(1.9rem,4.4vw,4rem)] font-extralight uppercase leading-[1.02] tracking-[0.03em] text-white">{s.title}</h3>
-                  <p className="mt-4 max-w-lg font-['Space_Grotesk'] text-[15px] leading-relaxed text-zinc-300 md:text-lg">{s.text}</p>
+                  <p className="font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-lg text-[#FF4D4D] md:text-2xl">{tr("Servicios")}</p>
+                  <h3 className="mt-1 font-['Jost'] text-[clamp(1.9rem,4.4vw,4rem)] font-extralight uppercase leading-[1.02] tracking-[0.03em] text-white">{tr(s.title)}</h3>
+                  <p className="mt-4 max-w-lg font-['Space_Grotesk'] text-[15px] leading-relaxed text-zinc-300 md:text-lg">{tr(s.text)}</p>
                   <ul className="mt-5 space-y-2">
                     {s.includes.map((x) => (
                       <li key={x} className="flex items-center gap-3 font-['Space_Grotesk'] text-sm text-zinc-200 md:text-base">
                         <Check className="h-4 w-4 shrink-0 text-[#E10600]" strokeWidth={2.2} />
-                        {x}
+                        {tr(x)}
                       </li>
                     ))}
                   </ul>
@@ -863,7 +1568,7 @@ function ChapterServices({ index, setRef, onBook }) {
                     tabIndex={cur === i ? 0 : -1}
                     className="group mt-7 inline-flex items-center gap-2 rounded-full bg-[#E10600] px-6 py-3.5 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.14em] text-black transition-colors hover:bg-[#ff2a2a]"
                   >
-                    Agendar este servicio <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                    {tr("Agendar este servicio")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                   </button>
                 </div>
               </div>
@@ -879,7 +1584,7 @@ function ChapterServices({ index, setRef, onBook }) {
               onClick={() => jump(i)}
               className={`text-right font-['Space_Grotesk'] text-[13px] transition-all duration-500 ${cur === i ? "translate-x-0 text-white" : "translate-x-2 text-white/35 hover:text-white/70"}`}
             >
-              {s.title}
+              {tr(s.title)}
               <span className={`ml-3 inline-block h-px align-middle transition-all duration-500 ${cur === i ? "w-8 bg-[#E10600]" : "w-3 bg-white/30"}`} />
             </button>
           ))}
@@ -895,8 +1600,8 @@ function ChapterServices({ index, setRef, onBook }) {
 
 function ChapterStatement({ index, setRef }) {
   const root = useRef(null);
-  const line1 = "Desde la idea hasta el lanzamiento.".split(" ");
-  const line2 = "Hacemos realidad tu proyecto.".split(" ");
+  const line1 = tr("Desde la idea hasta el lanzamiento.").split(" ");
+  const line2 = tr("Hacemos realidad tu proyecto.").split(" ");
   const total = line1.length + line2.length;
 
   useProgress(index, (p) => root.current?.style.setProperty("--q", seg(p, 0.05, 0.6).toFixed(4)));
@@ -915,7 +1620,7 @@ function ChapterStatement({ index, setRef }) {
     );
   };
 
-  const ticker = ["Vigora", "jwiill.r", "Trap", "Reggaetón", "R&B", "JV Productions"];
+  const ticker = ["Vigora", "jwiill.r", "Trap", tr("Reggaetón"), "R&B", "JV Productions"];
   const show = reveal("--q", 0.8, 1);
 
   return (
@@ -953,22 +1658,14 @@ function ChapterStatement({ index, setRef }) {
             <div className="relative flex min-h-0 w-full flex-1 flex-col text-left">
               <div className="mb-3 flex items-end justify-between gap-4">
                 <p className="font-['Anton'] text-2xl uppercase tracking-[0.04em] text-white md:text-4xl">
-                  Escucha a <span className="text-[#E10600]">Vigora</span>
+                  {tr("Escucha a")} <span className="text-[#E10600]">Vigora</span>
                 </p>
                 <span className="flex items-center gap-2 font-['Oswald'] text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-400 md:mr-[12%]">
-                  <span className="h-2 w-2 rounded-full bg-[#E10600] [animation:jv-blink_1.2s_steps(1)_infinite]" /> En rotación
+                  <span className="h-2 w-2 rounded-full bg-[#E10600] [animation:jv-blink_1.2s_steps(1)_infinite]" /> {tr("En rotación")}
                 </span>
               </div>
               <div className="relative min-h-0 flex-1">
-                <div className="pointer-events-none absolute right-0 top-1/2 hidden aspect-square h-[88%] max-h-[420px] -translate-y-1/2 md:block" aria-hidden="true">
-                  <div className="relative h-full w-full rounded-full bg-[repeating-radial-gradient(circle,#0d0d0d_0_2px,#1d1d1f_3px_4px)] shadow-[0_30px_80px_rgba(0,0,0,.8)] [animation:jv-spin_5s_linear_infinite]">
-                    <div className="absolute inset-[33%] flex items-center justify-center rounded-full bg-[#E10600]">
-                      <img src={IMAGES.logoVampire} alt="" className="w-[72%] object-contain" style={{ filter: "brightness(0) invert(1)" }} />
-                    </div>
-                    <div className="absolute inset-[48.6%] rounded-full bg-black" />
-                    <div className="absolute inset-0 rounded-full bg-[conic-gradient(from_40deg,transparent_0deg,rgba(255,255,255,.08)_30deg,transparent_60deg,transparent_180deg,rgba(255,255,255,.06)_210deg,transparent_240deg)]" />
-                  </div>
-                </div>
+                <Vinyl3D className="pointer-events-none absolute -right-[8%] top-1/2 hidden h-[125%] w-[60%] -translate-y-1/2 md:block" />
                 <div className="relative h-full min-h-[232px] md:max-h-[460px] md:min-h-[352px] md:w-[78%]">
                   <SpotifyPlayer className="!h-full shadow-[0_30px_80px_-20px_rgba(0,0,0,.95)]" />
                 </div>
@@ -1033,7 +1730,8 @@ function ChapterOrigin({ index, setRef }) {
   }, []);
 
   let wordIndex = 0;
-  const totalWords = MANIFESTO.length;
+  const words = LANG === "en" ? MANIFESTO_EN : MANIFESTO;
+  const totalWords = words.length;
 
   return (
     <section
@@ -1094,10 +1792,10 @@ function ChapterOrigin({ index, setRef }) {
 
         {/* Logo fijo desde el primer momento, con armas cruzadas detrás */}
         <div
-          className="absolute left-1/2 top-[36%] z-[26] w-[clamp(250px,52dvh,520px)] max-w-[92vw]"
+          className="absolute left-1/2 top-[37%] z-[26] w-[min(104vw,clamp(280px,60dvh,640px))] md:top-[38%]"
           style={{
             transform:
-              "translate(-50%, -50%) translate(calc(var(--mx, 0) * -10px), calc(var(--my, 0) * -8px + var(--b) * -18dvh)) scale(calc(1 - var(--b) * 0.5))",
+              "translate(-50%, -50%) translate(calc(var(--mx, 0) * -10px), calc(var(--my, 0) * -8px + var(--b) * -18dvh)) perspective(900px) rotateY(calc(var(--mx, 0) * 16deg)) rotateX(calc(var(--my, 0) * -12deg)) scale(calc(1 + var(--h) * 0.06 - var(--b) * 0.5))",
             opacity: "calc(1 - var(--b) * 1.7)",
           }}
         >
@@ -1111,10 +1809,10 @@ function ChapterOrigin({ index, setRef }) {
         >
           <h1 className="text-center font-['Anton'] uppercase leading-[0.95]">
             <span className="block text-[clamp(.95rem,1.8vw,1.35rem)] tracking-[0.62em] text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,.9)] [padding-left:0.62em]">
-              Tu música
+              {tr("Tu música")}
             </span>
             <span className="mt-2 block text-[clamp(2.1rem,5.4vw,4.4rem)] tracking-[0.02em] text-[#E10600] [animation:jv-glitch_5s_steps(1)_infinite]">
-              Nuestra producción
+              {tr("Nuestra producción")}
             </span>
           </h1>
         </div>
@@ -1125,14 +1823,14 @@ function ChapterOrigin({ index, setRef }) {
           onClick={() => window.scrollBy({ top: window.innerHeight * 0.9, behavior: "smooth" })}
           className="group absolute bottom-5 left-1/2 z-10 h-[76px] w-[76px] -translate-x-1/2 md:bottom-8 md:left-auto md:right-10 md:h-[96px] md:w-[96px] md:translate-x-0"
           style={{ opacity: "calc(1 - var(--h) * 3)" }}
-          aria-label="Desliza para entrar"
+          aria-label={tr("Desliza para entrar")}
         >
           <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full [animation:jv-spin_14s_linear_infinite]" aria-hidden="true">
             <defs>
               <path id="jv-ring" d="M50 50 m-38 0 a38 38 0 1 1 76 0 a38 38 0 1 1 -76 0" />
             </defs>
             <text fill="rgba(255,255,255,.75)" style={{ font: "600 9.4px Oswald, sans-serif", letterSpacing: "2.6px", textTransform: "uppercase" }}>
-              <textPath href="#jv-ring" textLength="236" lengthAdjust="spacing">Desliza · Entra al estudio ·</textPath>
+              <textPath href="#jv-ring" textLength="236" lengthAdjust="spacing">{tr("Desliza · Entra al estudio ·")}</textPath>
             </text>
           </svg>
           <span className="absolute inset-[30%] flex items-center justify-center rounded-full bg-[#E10600] text-white transition group-hover:bg-white group-hover:text-[#E10600]">
@@ -1171,7 +1869,7 @@ function ChapterOrigin({ index, setRef }) {
             >
               <img
                 src={card.src}
-                alt={card.label}
+                alt={tr(card.label)}
                 className="h-full w-full object-cover"
                 style={{ objectPosition: card.pos, transform: hero ? "scale(calc(1.04 + var(--d) * 0.04))" : "scale(1.04)" }}
               />
@@ -1186,7 +1884,7 @@ function ChapterOrigin({ index, setRef }) {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" style={hero ? { opacity: "calc(1 - var(--c))" } : undefined} />
               <figcaption className="absolute inset-x-0 bottom-0 p-4" style={hero ? { opacity: "calc(1 - var(--c) * 3)" } : undefined}>
-                <span className="block font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-xl text-white md:text-2xl">{card.label}</span>
+                <span className="block font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-xl text-white md:text-2xl">{tr(card.label)}</span>
               </figcaption>
             </figure>
           );
@@ -1197,7 +1895,7 @@ function ChapterOrigin({ index, setRef }) {
         <div className="absolute inset-0 z-30 bg-black" style={{ opacity: "calc(var(--c) * 0.35 + var(--d) * 0.45)" }} />
         <div className="absolute inset-0 z-40 flex items-center justify-center px-5 md:px-16" style={{ opacity: "calc(var(--c) * 2 - 1)" }}>
           <p className="max-w-5xl text-center font-['Jost'] text-[clamp(1.5rem,3.8vw,3.6rem)] font-light uppercase leading-[1.18] tracking-[0.04em] text-white">
-            {MANIFESTO.map((w, i) => {
+            {words.map((w, i) => {
               const k = wordIndex++;
               const t = `clamp(0, calc(var(--d) * ${totalWords + 2} - ${k}), 1)`;
               if (w.img) {
@@ -1258,11 +1956,24 @@ function ChapterBooking({ setRef, booking, setBooking }) {
   const set = (k, v) => setBooking((b) => ({ ...b, [k]: v }));
   const toggle = (s) => set("services", services.includes(s) ? services.filter((x) => x !== s) : [...services, s]);
 
+  const h = format === "Sesión por Horas" ? ` (${hours}h)` : "";
+  const list = services.map(tr).join(", ") || "-";
   const message =
-    `Hola JV Productions, soy ${name.trim() || "un artista"} y quiero agendar: ${services.join(", ") || "-"}` +
-    ` en formato ${format}${format === "Sesión por Horas" ? ` (${hours}h)` : ""}, para ${when.toLowerCase()}. ¿Tenéis disponibilidad?`;
+    LANG === "en"
+      ? `Hi JV Productions, I'm ${name.trim() || "an artist"} and I'd like to book: ${list} as ${tr(format)}${h}, for ${tr(when).toLowerCase()}. Are you available?`
+      : `Hola JV Productions, soy ${name.trim() || "un artista"} y quiero agendar: ${list} en formato ${format}${h}, para ${when.toLowerCase()}. ¿Tenéis disponibilidad?`;
   const ready = services.length > 0;
-  const send = () => ready && window.open(`https://wa.me/${LINKS.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  const viaWhatsApp = !!LINKS.whatsappNumber;
+  const [copied, setCopied] = useState(false);
+  const send = () => {
+    if (!ready) return;
+    if (viaWhatsApp) return window.open(`https://wa.me/${LINKS.whatsappNumber}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    // Instagram no deja rellenar el mensaje: lo copiamos y abrimos el chat
+    navigator.clipboard?.writeText(message).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 7000);
+    window.open(LINKS.instagramDM, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <section ref={setRef} aria-label="Agendar" className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-3 pb-4 pt-[72px] md:px-10 md:pb-10 md:pt-28">
@@ -1277,7 +1988,7 @@ function ChapterBooking({ setRef, booking, setBooking }) {
         style={{ transform: "translateX(calc(-50% + (1 - var(--enter, 0)) * 20vw))" }}
         aria-hidden="true"
       >
-        Suena a disco
+        {tr("Suena a disco")}
       </div>
 
       <div
@@ -1289,10 +2000,10 @@ function ChapterBooking({ setRef, booking, setBooking }) {
       >
         <div className="relative flex flex-col justify-between gap-4 p-4 pb-3 md:col-span-2 md:border-r md:border-white/10 md:p-10">
           <h2 className="font-['Anton'] text-[clamp(1.7rem,5dvh,4.5rem)] uppercase leading-[0.92] text-[#E10600]">
-            <SplitReveal text="¿Listo para sonar profesional?" from={0.55} to={1} />
+            <SplitReveal key={LANG} text={tr("¿Listo para sonar profesional?")} from={0.55} to={1} />
           </h2>
           <div className="hidden md:block">
-            <p className="mb-2 font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-lg text-[#FF4D4D]">Tu mensaje</p>
+            <p className="mb-2 font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-lg text-[#FF4D4D]">{tr("Tu mensaje")}</p>
             <div className="rounded-2xl rounded-bl-sm bg-[#16261c] p-4 font-['Space_Grotesk'] text-sm leading-relaxed text-zinc-200 shadow-sm">{message}</div>
           </div>
           <a
@@ -1312,21 +2023,21 @@ function ChapterBooking({ setRef, booking, setBooking }) {
             ["¿Cuándo?", BOOK_WHEN, (w) => when === w, (w) => set("when", w)],
           ].map(([label, opts, isOn, pick]) => (
             <fieldset key={label}>
-              <legend className="mb-1.5 font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-base text-[#FF4D4D] md:text-lg">{label}</legend>
+              <legend className="mb-1.5 font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-base text-[#FF4D4D] md:text-lg">{tr(label)}</legend>
               <div className="flex flex-wrap gap-1.5">
                 {opts.map((o) => (
                   <Choice key={o} active={isOn(o)} onClick={() => pick(o)}>
-                    {o}
+                    {tr(o)}
                     {o === "Sesión por Horas" && format === o ? ` · ${hours}h` : ""}
                   </Choice>
                 ))}
                 {label === "Formato" && format === "Sesión por Horas" && (
                   <span className="inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.04] px-1 text-zinc-200">
-                    <button onClick={() => set("hours", Math.max(1, hours - 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10" aria-label="Menos horas">
+                    <button onClick={() => set("hours", Math.max(1, hours - 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10" aria-label={tr("Menos horas")}>
                       <Minus className="h-3.5 w-3.5" />
                     </button>
                     <span className="min-w-[2.5ch] text-center font-['Space_Grotesk'] text-xs font-semibold">{hours}h</span>
-                    <button onClick={() => set("hours", Math.min(10, hours + 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10" aria-label="Más horas">
+                    <button onClick={() => set("hours", Math.min(10, hours + 1))} className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/10" aria-label={tr("Más horas")}>
                       <Plus className="h-3.5 w-3.5" />
                     </button>
                   </span>
@@ -1337,8 +2048,8 @@ function ChapterBooking({ setRef, booking, setBooking }) {
           <input
             value={name}
             onChange={(e) => set("name", e.target.value)}
-            placeholder="Tu nombre artístico (opcional)"
-            aria-label="Nombre artístico"
+            placeholder={tr("Tu nombre artístico (opcional)")}
+            aria-label={tr("Nombre artístico")}
             maxLength={40}
             className="w-full rounded-full border border-white/15 bg-white/[0.04] px-4 py-2 font-['Space_Grotesk'] text-sm text-white placeholder:text-zinc-500 focus:border-white/50 focus:outline-none md:py-2.5"
           />
@@ -1349,10 +2060,21 @@ function ChapterBooking({ setRef, booking, setBooking }) {
             className="group relative mt-1 flex w-full items-center justify-center gap-3 overflow-hidden rounded-full bg-[#E10600] px-5 py-3 font-['Anton'] text-base uppercase tracking-[0.08em] text-white transition-all disabled:cursor-not-allowed disabled:opacity-40 md:py-5 md:text-2xl"
           >
             <span className="absolute inset-0 -translate-x-full bg-white transition-transform duration-700 ease-[cubic-bezier(.2,.7,.2,1)] group-enabled:group-hover:translate-x-0" />
-            <WhatsAppIcon className="relative h-6 w-6 text-white transition-colors duration-700 group-enabled:group-hover:text-[#1aa34a]" />
-            <span className="relative transition-colors duration-700 group-enabled:group-hover:text-black">{ready ? "Agendar por WhatsApp ahora" : "Elige al menos un servicio"}</span>
+            {viaWhatsApp ? (
+              <WhatsAppIcon className="relative h-6 w-6 text-white transition-colors duration-700 group-enabled:group-hover:text-[#1aa34a]" />
+            ) : (
+              <InstagramIcon className="relative h-6 w-6 text-white transition-colors duration-700 group-enabled:group-hover:text-[#E10600]" />
+            )}
+            <span className="relative transition-colors duration-700 group-enabled:group-hover:text-black">
+              {tr(ready ? (viaWhatsApp ? "Agendar por WhatsApp ahora" : "Enviar por Instagram") : "Elige al menos un servicio")}
+            </span>
             {ready && <ArrowRight className="relative h-5 w-5 transition-all duration-700 group-hover:translate-x-1 group-hover:text-black" />}
           </button>
+          {copied && (
+            <p className="rounded-xl border border-[#E10600]/40 bg-[#E10600]/10 px-3 py-2 text-center font-['Space_Grotesk'] text-xs text-zinc-200 md:text-sm" role="status">
+              {tr("Mensaje copiado: pégalo en el chat de Instagram que se ha abierto.")}
+            </p>
+          )}
           <div className="flex items-center justify-between md:hidden">
             <a href={LINKS.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 font-['Space_Grotesk'] text-xs font-bold uppercase tracking-[0.1em] text-zinc-400">
               <InstagramIcon className="h-4 w-4" /> {LINKS.instagramHandle}
@@ -1374,6 +2096,20 @@ function JVProductions() {
   const listeners = useRef(new Map());
   const [active, setActive] = useState(0);
   const [ready, setReady] = useState(false);
+  const [lang, setLang] = useState(() => {
+    try {
+      const saved = localStorage.getItem("jv-lang");
+      if (saved) return saved;
+    } catch {}
+    return navigator.language?.toLowerCase().startsWith("es") ? "es" : "en";
+  });
+  LANG = lang;
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    try {
+      localStorage.setItem("jv-lang", lang);
+    } catch {}
+  }, [lang]);
   const [booking, setBooking] = useState({ services: [], format: "Sesión por Horas", when: "Esta semana", name: "", hours: 2 });
 
   const ctx = useRef({
@@ -1459,9 +2195,43 @@ function JVProductions() {
     };
   }, []);
 
+  // Viaje animado: recorre la página entera hasta el destino (rebobina si sube)
+  const trip = useRef(0);
+  const travelTo = (top) => {
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const from = window.scrollY;
+    const dist = clamp(top, 0, max) - from;
+    if (Math.abs(dist) < 8) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return window.scrollTo(0, from + dist);
+    const id = ++trip.current;
+    const dur = clamp((Math.abs(dist) / window.innerHeight) * 120, 900, 2600);
+    const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+    const stops = sections.current.map((el) => (el ? el.offsetTop / max : 0));
+    const end = () => {
+      if (trip.current !== id) return;
+      trip.current++;
+      FX.warp = 0;
+      ["wheel", "touchstart", "keydown"].forEach((ev) => window.removeEventListener(ev, end));
+      window.dispatchEvent(new CustomEvent("jv-travel", { detail: { on: false } }));
+    };
+    ["wheel", "touchstart", "keydown"].forEach((ev) => window.addEventListener(ev, end, { passive: true }));
+    FX.dir = Math.sign(dist);
+    window.dispatchEvent(new CustomEvent("jv-travel", { detail: { on: true, dir: FX.dir, stops } }));
+    const t0 = performance.now();
+    const step = (now) => {
+      if (trip.current !== id) return;
+      const t = Math.min(1, (now - t0) / dur);
+      window.scrollTo(0, from + dist * easeIO(t));
+      FX.warp = Math.sin(Math.PI * t);
+      if (t < 1) requestAnimationFrame(step);
+      else end();
+    };
+    requestAnimationFrame(step);
+  };
+
   const goTo = (i) => {
     const el = sections.current[i];
-    if (el) window.scrollTo({ top: el.offsetTop, behavior: "smooth" });
+    if (el) travelTo(i === 0 ? 0 : el.offsetTop);
   };
 
   const bookService = (service) => {
@@ -1480,7 +2250,10 @@ function JVProductions() {
       <div className="jv-grain relative overflow-x-clip bg-[#050505] font-['Space_Grotesk'] text-zinc-200 antialiased">
         <GlobalStyles />
         <Intro onDone={() => setReady(true)} />
-        <Nav goTo={goTo} light={false} />
+        <World3D />
+        <TravelHUD />
+        <Nav goTo={goTo} light={false} lang={lang} setLang={setLang} />
+        <BackToTop onClick={() => goTo(S.origin)} />
         <main>
           <ChapterOrigin index={S.origin} setRef={reg(S.origin)} />
           <ChapterStudio index={S.studio} setRef={reg(S.studio)} />
