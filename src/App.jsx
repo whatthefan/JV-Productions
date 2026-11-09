@@ -1278,7 +1278,13 @@ function ChapterStudio({ index, setRef }) {
     const v = main.current;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) v?.play().catch(() => {});
+        if (e.isIntersecting) {
+          v?.play().catch(() => {
+            const retry = () => v.play().catch(() => {});
+            window.addEventListener("touchend", retry, { once: true, passive: true });
+            window.addEventListener("click", retry, { once: true });
+          });
+        }
         else {
           v?.pause();
           setMuted(true); // al salir, vuelve la música de fondo
@@ -1424,7 +1430,10 @@ function ChapterStudio({ index, setRef }) {
           <div
             className="flex min-h-0 flex-1 flex-col items-center md:flex-none"
             style={{
-              transform: "perspective(1600px) translateY(calc((1 - var(--v)) * 12svh)) rotateX(calc((1 - var(--v)) * 10deg)) scale(calc(0.82 + var(--v) * 0.18))",
+              transform: TOUCH
+                ? "translate3d(0, calc((1 - var(--v)) * 8svh), 0) scale(calc(0.9 + var(--v) * 0.1))"
+                : "perspective(1600px) translateY(calc((1 - var(--v)) * 12svh)) rotateX(calc((1 - var(--v)) * 10deg)) scale(calc(0.82 + var(--v) * 0.18))",
+              willChange: "transform",
               opacity: "calc(0.35 + var(--v) * 0.65)",
             }}
           >
@@ -1448,7 +1457,7 @@ function ChapterStudio({ index, setRef }) {
               <span className="relative h-px flex-1 overflow-hidden bg-white/15">
                 <span ref={bar} className="absolute inset-0 origin-left scale-x-0 bg-[#E10600]" />
               </span>
-              <button onClick={openBig} className="text-zinc-300 transition hover:text-white">
+              <button onClick={openBig} className="shrink-0 whitespace-nowrap text-zinc-300 transition hover:text-white">
                 {tr("Ver en grande")}
               </button>
             </div>
@@ -1501,7 +1510,12 @@ function ChapterServices({ index, setRef, onBook }) {
             <div
               key={s.title}
               className="absolute inset-0"
-              style={{ clipPath: `inset(calc((1 - ${t}) * 100%) 0 0 0)`, zIndex: i, visibility: Math.abs(i - cur) > 1 ? "hidden" : "visible" }}
+              style={{
+                transform: `translate3d(0, calc((1 - ${t}) * 100%), 0)`,
+                willChange: "transform",
+                zIndex: i,
+                visibility: Math.abs(i - cur) > 1 ? "hidden" : "visible",
+              }}
             >
               <Photo src={s.img} pos={s.pos} className="absolute inset-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/55 to-[#050505]/10 md:bg-gradient-to-r md:from-[#050505] md:via-[#050505]/70 md:to-transparent" />
