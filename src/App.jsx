@@ -539,7 +539,7 @@ function Intro({ onDone }) {
       <div className="absolute inset-0 grid place-items-center" style={{ opacity: ph >= 2 ? 0 : 1, transition: "opacity .45s" }}>
         <div className="relative flex flex-col items-center">
           <Logo
-            className="h-[clamp(120px,24dvh,220px)]"
+            className="h-[clamp(120px,24svh,220px)]"
             style={{
               opacity: ph >= 1 ? 1 : 0,
               filter: ph >= 1 ? "blur(0px)" : "blur(16px)",
@@ -653,7 +653,7 @@ function BackgroundMusic() {
         }}
         aria-label={tr(on ? "Apagar música" : "Poner música")}
         title={MUSIC.title}
-        className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md md:h-11 md:w-11"
+        className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-black/60 text-white md:bg-black/40 md:backdrop-blur-md md:h-11 md:w-11"
       >
         {on ? (
           <span className="flex h-3.5 items-end gap-[2px]" aria-hidden="true">
@@ -675,6 +675,9 @@ function BackgroundMusic() {
 
 /** Estado compartido con la capa 3D: velocidad del viaje (0–1) y sentido (1 baja, -1 sube) */
 const FX = { warp: 0, dir: 1 };
+
+/** Móviles y tablets: se quitan los efectos caros para que el scroll vaya fluido */
+const TOUCH = typeof window !== "undefined" && window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
 const TRAVEL_LABELS = ["Inicio", "El estudio", "Servicios", "Vigora", "Reserva"];
 
@@ -712,7 +715,7 @@ function World3D() {
   const host = useRef(null);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (TOUCH || window.innerWidth < 768 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let alive = true;
     let cleanup = () => {};
 
@@ -1200,7 +1203,7 @@ function Nav({ goTo, light, lang, setLang }) {
     window.addEventListener("scroll", on, { passive: true });
     return () => window.removeEventListener("scroll", on);
   }, []);
-  const pill = "pointer-events-auto grid h-10 place-items-center rounded-full border border-white/20 bg-black/40 text-white backdrop-blur-md md:h-11";
+  const pill = "pointer-events-auto grid h-10 place-items-center rounded-full border border-white/20 bg-black/60 text-white md:bg-black/40 md:backdrop-blur-md md:h-11";
   return (
     <header className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex items-center justify-between px-4 py-4 md:px-10 md:py-7">
       <button onClick={() => goTo(S.origin)} className="pointer-events-auto flex items-center gap-3" aria-label={tr("Ir al inicio")}>
@@ -1231,7 +1234,7 @@ function Nav({ goTo, light, lang, setLang }) {
       <BackgroundMusic />
       <button
         onClick={() => goTo(S.booking)}
-        className={`pointer-events-auto group relative overflow-hidden rounded-full border px-4 py-2.5 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] backdrop-blur-md transition-colors duration-500 md:px-7 md:py-3 ${
+        className={`pointer-events-auto group relative overflow-hidden rounded-full border px-4 py-2.5 font-['Space_Grotesk'] text-[11px] font-semibold uppercase tracking-[0.16em] md:backdrop-blur-md transition-colors duration-500 md:px-7 md:py-3 ${
           light ? "border-black/20 bg-white/40 text-black" : "border-white/20 bg-black/40 text-white"
         }`}
       >
@@ -1348,7 +1351,7 @@ function ChapterStudio({ index, setRef }) {
       className="relative h-[230vh]"
       style={{ "--v": 0, "--w": 0 }}
     >
-      <div className="sticky top-0 h-[100dvh] overflow-hidden">
+      <div className="sticky top-0 h-[100svh] overflow-hidden">
         {big &&
           createPortal(
           <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/95 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={tr("Vídeo del estudio")} onClick={closeBig}>
@@ -1359,7 +1362,7 @@ function ChapterStudio({ index, setRef }) {
               playsInline
               controls
               loop
-              className="h-[100dvh] max-w-full object-contain md:h-[94dvh] md:rounded-2xl"
+              className="h-[100svh] max-w-full object-contain md:h-[94svh] md:rounded-2xl"
               onClick={(e) => e.stopPropagation()}
             />
             <button
@@ -1371,14 +1374,8 @@ function ChapterStudio({ index, setRef }) {
           </div>,
           document.body
         )}
-        {/* Fondo: el póster del vídeo desenfocado (más ligero que un vídeo con blur) */}
-        <img
-          src={VIDEO.poster}
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 h-full w-full scale-110 object-cover"
-          style={{ opacity: "calc(0.05 + var(--v) * 0.15)" }}
-        />
+        {/* Fondo: luz roja tenue que crece con el vídeo */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_70%_50%,rgba(225,6,0,.22),transparent_60%)]" style={{ opacity: "var(--v)" }} aria-hidden="true" />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/70 to-[#050505]/40" />
         {/* Número de capítulo gigante en contorno */}
         <span
@@ -1427,18 +1424,18 @@ function ChapterStudio({ index, setRef }) {
           <div
             className="flex min-h-0 flex-1 flex-col items-center md:flex-none"
             style={{
-              transform: "perspective(1600px) translateY(calc((1 - var(--v)) * 12dvh)) rotateX(calc((1 - var(--v)) * 10deg)) scale(calc(0.82 + var(--v) * 0.18))",
+              transform: "perspective(1600px) translateY(calc((1 - var(--v)) * 12svh)) rotateX(calc((1 - var(--v)) * 10deg)) scale(calc(0.82 + var(--v) * 0.18))",
               opacity: "calc(0.35 + var(--v) * 0.65)",
             }}
           >
-            <div className="relative aspect-[9/16] h-full max-h-[calc(100dvh-230px)] min-h-0 overflow-hidden rounded-[22px] border border-white/15 bg-black shadow-[0_60px_140px_-30px_rgba(0,0,0,.95),0_0_0_1px_rgba(225,6,0,.15)] md:h-[calc(100dvh-170px)] md:max-h-[920px]">
+            <div className="relative aspect-[9/16] h-full max-h-[calc(100svh-230px)] min-h-0 overflow-hidden rounded-[22px] border border-white/15 bg-black shadow-[0_60px_140px_-30px_rgba(0,0,0,.95),0_0_0_1px_rgba(225,6,0,.15)] md:h-[calc(100svh-170px)] md:max-h-[920px]">
               <video ref={main} src={VIDEO.src} poster={VIDEO.poster} muted autoPlay loop playsInline preload="metadata" className="h-full w-full object-cover" />
             </div>
             {/* Barra bajo el vídeo: tiempo, progreso y pantalla completa */}
             <div className="mt-3 flex w-full items-center gap-3 font-['JetBrains_Mono'] text-[11px] uppercase tracking-[0.14em] text-zinc-400">
               <button
                 onClick={() => setMuted((m) => !m)}
-                className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 font-[Space_Grotesk] text-[11px] font-bold uppercase tracking-[0.14em] backdrop-blur-md transition-colors ${
+                className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-2 font-[Space_Grotesk] text-[11px] font-bold uppercase tracking-[0.14em] md:backdrop-blur-md transition-colors ${
                   muted ? "bg-[#E10600] text-white shadow-[0_0_30px_rgba(225,6,0,.6)]" : "bg-black/60 text-white"
                 }`}
                 aria-label={tr(muted ? "Activar sonido" : "Silenciar")}
@@ -1495,7 +1492,7 @@ function ChapterServices({ index, setRef, onBook }) {
       className="relative"
       style={{ height: `${100 + n * 44}vh`, "--f": 0 }}
     >
-      <div className="sticky top-0 h-[100dvh] overflow-hidden bg-[#050505]">
+      <div className="sticky top-0 h-[100svh] overflow-hidden bg-[#050505]">
         {SERVICES.map((s, i) => {
           // Cada servicio entra cubriendo al anterior desde abajo
           const t = i === 0 ? "1" : `clamp(0, calc(var(--f) - ${i - 1}), 1)`;
@@ -1506,7 +1503,7 @@ function ChapterServices({ index, setRef, onBook }) {
               className="absolute inset-0"
               style={{ clipPath: `inset(calc((1 - ${t}) * 100%) 0 0 0)`, zIndex: i, visibility: Math.abs(i - cur) > 1 ? "hidden" : "visible" }}
             >
-              <Photo src={s.img} pos={s.pos} className="absolute inset-0" imgStyle={{ transform: `scale(calc(1.12 - ${t} * 0.08))` }} />
+              <Photo src={s.img} pos={s.pos} className="absolute inset-0" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/55 to-[#050505]/10 md:bg-gradient-to-r md:from-[#050505] md:via-[#050505]/70 md:to-transparent" />
 
               <div className="relative flex h-full items-end px-5 pb-10 pt-24 md:items-center md:px-16 md:pb-0">
@@ -1592,8 +1589,8 @@ function ChapterStatement({ index, setRef }) {
       className="relative h-[210vh]"
       style={{ "--q": 0 }}
     >
-      <div className="sticky top-0 h-[100dvh] overflow-hidden">
-        <Photo src={IMAGES.crowdGold} className="absolute inset-0" imgStyle={{ transform: "scale(calc(1.1 - var(--p, 0) * 0.08))" }} />
+      <div className="sticky top-0 h-[100svh] overflow-hidden">
+        <Photo src={IMAGES.crowdGold} className="absolute inset-0" />
         <div className="absolute inset-0 bg-[#050505]/60" />
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-[#050505] via-[#050505]/85 to-transparent" />
 
@@ -1702,7 +1699,7 @@ function ChapterOrigin({ index, setRef }) {
       className="relative h-[370vh]"
       style={{ "--h": 0, "--a": 0, "--b": 0, "--c": 0, "--d": 0, "--s": 1.8 }}
     >
-      <div className="sticky top-0 h-[100dvh] overflow-hidden">
+      <div className="sticky top-0 h-[100svh] overflow-hidden">
         {/* Fondo negro con una luz blanca tenue desde arriba */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_15%,#1a1a1c_0%,#050505_62%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(255,255,255,.06),transparent_60%)]" style={{ opacity: "var(--b)" }} />
@@ -1716,7 +1713,8 @@ function ChapterOrigin({ index, setRef }) {
             style={{
               objectPosition: "50% 30%",
               filter: "grayscale(1) contrast(1.35) brightness(.7)",
-              transform: "translate(calc(var(--mx, 0) * -12px), calc(var(--my, 0) * -8px + var(--h) * -3dvh)) scale(calc(1.04 + var(--h) * 0.08 + var(--a) * 0.05))",
+              willChange: "transform",
+              transform: "translate(calc(var(--mx, 0) * -12px), calc(var(--my, 0) * -8px + var(--h) * -3svh)) scale(calc(1.04 + var(--h) * 0.08 + var(--a) * 0.05))",
             }}
           />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,transparent_0%,rgba(5,5,5,.5)_60%,rgba(5,5,5,.95)_100%)]" />
@@ -1740,10 +1738,10 @@ function ChapterOrigin({ index, setRef }) {
 
         {/* Logo fijo desde el primer momento */}
         <div
-          className="absolute left-1/2 top-[37%] z-[26] w-[min(104vw,clamp(280px,60dvh,640px))] md:top-[38%]"
+          className="absolute left-1/2 top-[37%] z-[26] w-[min(104vw,clamp(280px,60svh,640px))] will-change-transform md:top-[38%]"
           style={{
             transform:
-              "translate(-50%, -50%) translate(calc(var(--mx, 0) * -10px), calc(var(--my, 0) * -8px + var(--b) * -18dvh)) perspective(900px) rotateY(calc(var(--mx, 0) * 16deg)) rotateX(calc(var(--my, 0) * -12deg)) scale(calc(1 + var(--h) * 0.06 - var(--b) * 0.5))",
+              "translate(-50%, -50%) translate(calc(var(--mx, 0) * -10px), calc(var(--my, 0) * -8px + var(--b) * -18svh)) perspective(900px) rotateY(calc(var(--mx, 0) * 16deg)) rotateX(calc(var(--my, 0) * -12deg)) scale(calc(1 + var(--h) * 0.06 - var(--b) * 0.5))",
             opacity: "calc(1 - var(--b) * 1.7)",
           }}
         >
@@ -1753,7 +1751,7 @@ function ChapterOrigin({ index, setRef }) {
         {/* Eslogan bajo el micro */}
         <div
           className="absolute inset-x-0 bottom-[19%] z-10 flex justify-center px-6 md:bottom-[11%]"
-          style={{ opacity: "calc(1 - var(--b) * 2)", transform: "translateY(calc(var(--h) * -3dvh))" }}
+          style={{ opacity: "calc(1 - var(--b) * 2)", transform: "translateY(calc(var(--h) * -3svh))" }}
         >
           <h1 className="text-center font-['Anton'] uppercase leading-[0.95]">
             <span className="block text-[clamp(.95rem,1.8vw,1.35rem)] tracking-[0.62em] text-transparent [-webkit-text-stroke:1px_rgba(255,255,255,.9)] [padding-left:0.62em]">
@@ -1799,13 +1797,13 @@ function ChapterOrigin({ index, setRef }) {
           const hero = i === HERO_CARD;
           const x = `calc((${rx} + (${ox - rx}) * var(--b)) * ${hero ? "(1 - var(--c))" : "(1 + var(--c) * 1.4)"} * 1%)`;
           const r = `calc((${rr} + (${or - rr}) * var(--b)) * ${hero ? "(1 - var(--c))" : "1"} * 1deg)`;
-          const y = `calc((${ry} + (${oy - ry}) * var(--b)) * 1px + (1 - var(--b)) * 75dvh + ${hero ? "(1 - var(--c))" : "1"} * 12dvh)`;
+          const y = `calc((${ry} + (${oy - ry}) * var(--b)) * 1px + (1 - var(--b)) * 75svh + ${hero ? "(1 - var(--c))" : "1"} * 12svh)`;
           const tilt = hero ? "(1 - var(--c))" : "1";
           return (
             <figure
               key={card.label}
               ref={hero ? heroCard : undefined}
-              className="absolute left-1/2 top-1/2 z-20 aspect-[3/4] h-[clamp(190px,44dvh,420px)] max-w-[56vw] overflow-hidden border border-white/15 bg-zinc-900 shadow-[0_30px_80px_-10px_rgba(0,0,0,.9)] will-change-transform"
+              className="absolute left-1/2 top-1/2 z-20 aspect-[3/4] h-[clamp(190px,44svh,420px)] max-w-[56vw] overflow-hidden border border-white/15 bg-zinc-900 shadow-[0_30px_80px_-10px_rgba(0,0,0,.9)] will-change-transform"
               style={{
                 transform: `perspective(1200px) translate(-50%, -50%) translateX(${x}) translateY(${y}) rotate(${r}) rotateY(calc(var(--mx, 0) * 12deg * ${tilt})) rotateX(calc(var(--my, 0) * -9deg * ${tilt})) ${
                   hero ? "scale(calc(1 + (var(--s) - 1) * var(--c)))" : ""
@@ -1923,7 +1921,7 @@ function ChapterBooking({ setRef, booking, setBooking }) {
   };
 
   return (
-    <section ref={setRef} aria-label="Agendar" className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-3 pb-4 pt-[72px] md:px-10 md:pb-10 md:pt-28">
+    <section ref={setRef} aria-label="Agendar" className="relative flex min-h-[100svh] items-center justify-center overflow-hidden px-3 pb-4 pt-[72px] md:px-10 md:pb-10 md:pt-28">
       {/* La luz se abre en círculo desde abajo */}
       <div className="absolute inset-0" style={{ clipPath: "circle(calc(var(--enter, 0) * 135%) at 50% 100%)" }}>
         <img src={IMAGES.crowdGold} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ transform: "scale(calc(1.08 - var(--enter, 0) * 0.06))" }} />
@@ -1938,14 +1936,14 @@ function ChapterBooking({ setRef, booking, setBooking }) {
       </div>
 
       <div
-        className="no-scrollbar relative z-10 grid max-h-full w-full max-w-6xl overflow-y-auto rounded-[32px] border border-white/10 bg-[#0c0c0e]/95 text-white shadow-[0_50px_140px_-30px_rgba(0,0,0,.9)] backdrop-blur-md md:grid-cols-5"
+        className="no-scrollbar relative z-10 grid max-h-full w-full max-w-6xl overflow-y-auto rounded-[32px] border border-white/10 bg-[#0c0c0e]/95 text-white shadow-[0_50px_140px_-30px_rgba(0,0,0,.9)] md:backdrop-blur-md md:grid-cols-5"
         style={{
           transform: "perspective(1400px) translateY(calc((1 - var(--enter, 0)) * 120px)) rotateX(calc((1 - var(--enter, 0)) * 14deg))",
           opacity: "calc(var(--enter, 0) * 1.4 - 0.2)",
         }}
       >
         <div className="relative flex flex-col justify-between gap-4 p-4 pb-3 md:col-span-2 md:border-r md:border-white/10 md:p-10">
-          <h2 className="font-['Anton'] text-[clamp(1.7rem,5dvh,4.5rem)] uppercase leading-[0.92] text-[#E10600]">
+          <h2 className="font-['Anton'] text-[clamp(1.7rem,5svh,4.5rem)] uppercase leading-[0.92] text-[#E10600]">
             <SplitReveal key={LANG} text={tr("¿Listo para sonar profesional?")} from={0.55} to={1} />
           </h2>
           <div className="hidden md:block">
@@ -2075,7 +2073,7 @@ export default function JVProductions() {
     window.history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const ease = reduce ? 1 : 0.26;
+    const ease = reduce || TOUCH ? 1 : 0.26; // en táctil el dedo ya da la inercia
     const docEl = document.documentElement;
     const state = [];
     const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
