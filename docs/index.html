@@ -68,8 +68,8 @@ const MUSIC = { src: "audio/pendiente-sesion-one.m4a", title: "Pendiente — Ses
 
 const VIDEO = {
   // Montaje del estudio (etalonado, con cortes y cierre con logo) hecho a partir de tu vídeo original
-  src: "videos/jv-studio-edit-v2.mp4",
-  poster: "videos/jv-studio-poster-v2.jpg",
+  src: "videos/jv-studio-edit-v3.mp4",
+  poster: "videos/jv-studio-poster-v3.jpg",
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -122,7 +122,7 @@ const EN = {
   "Videoclips": "Music Videos",
   "Distribución Musical": "Music Distribution",
   "Nos encargamos del tema entero. Tú llegas con la idea y te vas con una canción lista para sacar.": "We handle the whole track. You come in with the idea and leave with a song ready to release.",
-  "Instrumentales exclusivas hechas desde cero para tu voz y tu estilo: trap, reggaetón, R&B o drill.": "Exclusive instrumentals made from scratch for your voice and style: trap, reggaeton, R&B or drill.",
+  "Instrumentales exclusivas hechas desde cero para tu voz y tu estilo, sea cual sea el género.": "Exclusive instrumentals made from scratch for your voice and style, whatever the genre.",
   "Reserva las horas que necesites en cabina tratada. Te dirigimos la sesión para sacar tu mejor toma.": "Book the hours you need in a treated booth. We direct the session to get your best take.",
   "Equilibramos cada pista y llevamos tu tema al volumen y la claridad de las plataformas, sin perder pegada.": "We balance every track and bring your song to streaming loudness and clarity, without losing punch.",
   "Escribimos contigo o pulimos lo que ya tienes: estructura, estribillos que se quedan y barras con identidad.": "We write with you or polish what you have: structure, hooks that stick and bars with identity.",
@@ -161,7 +161,7 @@ const EN = {
   "Hacemos realidad tu proyecto.": "We make your project real.",
   "Escucha a": "Listen to",
   "En rotación": "On rotation",
-  "Reggaetón": "Reggaeton",
+  "Todos los géneros": "Every genre",
   "El Setup": "The Setup",
   "En la Zona": "In the Zone",
   "Tu música": "Your music",
@@ -255,7 +255,7 @@ const SERVICES = [
     book: "Beat a Medida",
     img: "img/stock/sv-beats.jpg",
     pos: "50% 40%",
-    text: "Instrumentales exclusivas hechas desde cero para tu voz y tu estilo: trap, reggaetón, R&B o drill.",
+    text: "Instrumentales exclusivas hechas desde cero para tu voz y tu estilo, sea cual sea el género.",
     includes: ["Beat exclusivo a tu medida", "Stems separados por pistas", "Ajustes hasta que encaje con tu flow"],
   },
   {
@@ -570,54 +570,17 @@ function Intro({ onDone }) {
   );
 }
 
-/** Silueta de pistola (apunta a la derecha) para el emblema */
-const PISTOL =
-  "M6 18 H170 L176 22 V40 H150 V50 H114 C114 64 106 70 94 70 H86 V62 C95 62 100 58 100 50 H64 L46 110 H6 L24 40 H6 Z";
-
-/** Logo JV en rojo y blanco con armas cruzadas detrás */
+/** Logo JV en rojo y blanco con un halo rojo suave detrás */
 function VampireLogo({ className = "" }) {
   return (
     <div className={`relative aspect-[827/804] w-full ${className}`}>
-      {/* Armas cruzadas */}
-      <svg viewBox="0 0 400 260" className="absolute left-1/2 top-[56%] w-[150%] -translate-x-1/2 -translate-y-1/2 opacity-80" aria-hidden="true">
-        <g transform="translate(200 130) rotate(-24) translate(-30 -60)">
-          <path d={PISTOL} fill="#0a0a0a" stroke="rgba(255,255,255,.55)" strokeWidth="1.4" />
-        </g>
-        <g transform="translate(200 130) scale(-1 1) rotate(-24) translate(-30 -60)">
-          <path d={PISTOL} fill="#0a0a0a" stroke="rgba(255,255,255,.55)" strokeWidth="1.4" />
-        </g>
-      </svg>
-      {/* Halo rojo que late y ondas de sonido que salen del logo */}
-      <div className="absolute inset-[14%] rounded-full bg-[#E10600]/35 blur-[70px] [animation:jv-pulse_2.4s_ease-in-out_infinite]" />
-      {[0, 1, 2].map((k) => (
-        <span
-          key={k}
-          className="absolute inset-[22%] rounded-full border border-[#E10600]/60"
-          style={{ animation: `jv-ping 3.6s cubic-bezier(.2,.6,.3,1) ${k * 1.2}s infinite` }}
-        />
-      ))}
+      <div className="absolute inset-[16%] rounded-full bg-[#E10600]/25 blur-[60px]" />
       <img
         src={IMAGES.logoVampire}
         alt="JV Productions"
-        className="relative h-full w-full object-contain [animation:jv-breathe_4.8s_ease-in-out_infinite]"
-        style={{ filter: "drop-shadow(0 0 22px rgba(225,6,0,.55)) drop-shadow(0 10px 18px rgba(0,0,0,.9))" }}
+        className="relative h-full w-full object-contain"
+        style={{ filter: "drop-shadow(0 0 18px rgba(225,6,0,.45))" }}
       />
-      {/* Destello de luz que recorre el logo */}
-      <div
-        className="pointer-events-none absolute inset-0 mix-blend-overlay [animation:jv-breathe_4.8s_ease-in-out_infinite]"
-        style={{
-          WebkitMaskImage: `url(${IMAGES.logoVampire})`,
-          maskImage: `url(${IMAGES.logoVampire})`,
-          WebkitMaskSize: "contain",
-          maskSize: "contain",
-          WebkitMaskRepeat: "no-repeat",
-          maskRepeat: "no-repeat",
-          WebkitMaskPosition: "center",
-          maskPosition: "center",
-        }}
-      >
-        <div className="absolute inset-0 bg-[linear-gradient(105deg,transparent_38%,rgba(255,255,255,.95)_50%,transparent_62%)] bg-[length:260%_100%] [animation:jv-shine_5s_ease-in-out_infinite]" />
-      </div>
     </div>
   );
 }
@@ -645,9 +608,9 @@ function Photo({ src, pos = "50% 50%", className = "relative", imgClassName = ""
         src={src}
         alt=""
         className={`absolute inset-0 h-full w-full object-cover ${imgClassName}`}
-        style={{ objectPosition: pos, filter: "grayscale(1) contrast(1.25) brightness(.8)", ...imgStyle }}
+        style={{ objectPosition: pos, filter: "grayscale(1) contrast(1.25) brightness(.8)", willChange: "transform", ...imgStyle }}
       />
-      <div className="absolute inset-0 mix-blend-soft-light" style={{ background: "linear-gradient(160deg, rgba(0,0,0,.45), rgba(0,0,0,.1) 50%, rgba(0,0,0,.5))" }} />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(160deg, rgba(0,0,0,.4), rgba(0,0,0,.05) 50%, rgba(0,0,0,.45))" }} />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,transparent_40%,rgba(5,5,5,.75)_100%)]" />
       {children}
     </div>
@@ -771,7 +734,7 @@ function World3D() {
         const DEPTH = 240;
 
         const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false, powerPreference: "low-power" });
-        renderer.setPixelRatio(small ? 1 : Math.min(window.devicePixelRatio, 1.5));
+        renderer.setPixelRatio(1);
         renderer.setClearColor(0x000000, 0);
         renderer.domElement.style.cssText = "width:100%;height:100%;display:block";
         el.appendChild(renderer.domElement);
@@ -781,7 +744,7 @@ function World3D() {
         const camera = new THREE.PerspectiveCamera(62, 1, 0.1, 140);
 
         // Brasas: un túnel de partículas rojas y alguna blanca
-        const N = small ? 420 : 900;
+        const N = small ? 260 : 520;
         const pos = new Float32Array(N * 3);
         const col = new Float32Array(N * 3);
         for (let i = 0; i < N; i++) {
@@ -809,7 +772,7 @@ function World3D() {
         // Anillos de onda: como si la página fuera el interior de un altavoz
         const ringMat = new THREE.LineBasicMaterial({ color: 0xe10600, transparent: true, opacity: 0.16, blending: THREE.AdditiveBlending, depthWrite: false });
         const rings = [];
-        for (let k = 0; k < 30; k++) {
+        for (let k = 0; k < 18; k++) {
           const pts = [];
           const R = 7 + (k % 3) * 1.4;
           const wobble = 0.12 + Math.random() * 0.25;
@@ -820,14 +783,14 @@ function World3D() {
             pts.push(new THREE.Vector3(Math.cos(a) * rr, Math.sin(a) * rr * 0.75, 0));
           }
           const ring = new THREE.LineLoop(new THREE.BufferGeometry().setFromPoints(pts), ringMat);
-          ring.position.z = -12 - k * 8;
+          ring.position.z = -12 - k * 13;
           ring.rotation.z = Math.random() * Math.PI;
           scene.add(ring);
           rings.push(ring);
         }
 
         // Estelas de velocidad: solo se ven cuando la página viaja
-        const M = small ? 140 : 260;
+        const M = small ? 90 : 160;
         const sPos = new Float32Array(M * 6);
         const base = Array.from({ length: M }, () => {
           const r = 1.6 + Math.random() * 7;
@@ -864,6 +827,8 @@ function World3D() {
 
         const loop = (now) => {
           raf = requestAnimationFrame(loop);
+          // Sin viaje ni scroll rápido basta con 30 fps
+          if (warp < 0.02 && now - last < 32) return;
           const dt = Math.min(0.05, (now - last) / 1000);
           last = now;
           const t = now / 1000;
@@ -926,7 +891,7 @@ function World3D() {
     };
   }, []);
 
-  return <div ref={host} className="pointer-events-none fixed inset-0 z-[60] opacity-80 mix-blend-screen" aria-hidden="true" />;
+  return <div ref={host} className="pointer-events-none fixed inset-0 z-[60] opacity-70" aria-hidden="true" />;
 }
 
 /** Tocadiscos 3D con el vinilo de JV: gira, refleja la luz y se inclina con el ratón y el scroll */
@@ -1421,8 +1386,8 @@ function ChapterStudio({ index, setRef }) {
           src={VIDEO.poster}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 h-full w-full scale-125 object-cover blur-[50px]"
-          style={{ opacity: "calc(0.1 + var(--v) * 0.35)" }}
+          className="absolute inset-0 h-full w-full scale-110 object-cover"
+          style={{ opacity: "calc(0.05 + var(--v) * 0.15)" }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-[#050505] via-[#050505]/70 to-[#050505]/40" />
         {/* Número de capítulo gigante en contorno */}
@@ -1538,7 +1503,7 @@ function ChapterServices({ index, setRef, onBook }) {
       }}
       aria-label="Servicios"
       className="relative"
-      style={{ height: `${100 + n * 52}vh`, "--f": 0 }}
+      style={{ height: `${100 + n * 44}vh`, "--f": 0 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden bg-[#050505]">
         {SERVICES.map((s, i) => {
@@ -1546,7 +1511,11 @@ function ChapterServices({ index, setRef, onBook }) {
           const t = i === 0 ? "1" : `clamp(0, calc(var(--f) - ${i - 1}), 1)`;
           const here = `clamp(0, calc(1 - (var(--f) - ${i}) * (var(--f) - ${i}) * 4.5), 1)`; // 1 cuando es el actual; se apaga antes de que entre el siguiente
           return (
-            <div key={s.title} className="absolute inset-0" style={{ clipPath: `inset(calc((1 - ${t}) * 100%) 0 0 0)`, zIndex: i }}>
+            <div
+              key={s.title}
+              className="absolute inset-0"
+              style={{ clipPath: `inset(calc((1 - ${t}) * 100%) 0 0 0)`, zIndex: i, visibility: Math.abs(i - cur) > 1 ? "hidden" : "visible" }}
+            >
               <Photo src={s.img} pos={s.pos} className="absolute inset-0" imgStyle={{ transform: `scale(calc(1.12 - ${t} * 0.08))` }} />
               <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/55 to-[#050505]/10 md:bg-gradient-to-r md:from-[#050505] md:via-[#050505]/70 md:to-transparent" />
 
@@ -1612,7 +1581,7 @@ function ChapterStatement({ index, setRef }) {
       <React.Fragment key={`${gold}-${i}`}>
         <span
           className={`inline-block ${gold ? "font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-[#FF4D4D]" : ""}`}
-          style={{ opacity: `calc(0.12 + 0.88 * ${t})`, filter: `blur(calc((1 - ${t}) * 6px))`, transform: `translateY(calc((1 - ${t}) * 0.25em))` }}
+          style={{ opacity: `calc(0.12 + 0.88 * ${t})`, transform: `translateY(calc((1 - ${t}) * 0.25em))` }}
         >
           {w}
         </span>{" "}
@@ -1620,7 +1589,7 @@ function ChapterStatement({ index, setRef }) {
     );
   };
 
-  const ticker = ["Vigora", "jwiill.r", "Trap", tr("Reggaetón"), "R&B", "JV Productions"];
+  const ticker = ["Vigora", "jwiill.r", tr("Todos los géneros"), "JV Productions"];
   const show = reveal("--q", 0.8, 1);
 
   return (
@@ -1740,7 +1709,7 @@ function ChapterOrigin({ index, setRef }) {
         setRef(el);
       }}
       aria-label="Origen"
-      className="relative h-[430vh]"
+      className="relative h-[370vh]"
       style={{ "--h": 0, "--a": 0, "--b": 0, "--c": 0, "--d": 0, "--s": 1.8 }}
     >
       <div className="sticky top-0 h-[100dvh] overflow-hidden">
@@ -1766,31 +1735,20 @@ function ChapterOrigin({ index, setRef }) {
 
         {/* Rayos de luz desde arriba; se inclinan con el ratón */}
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-[75%] origin-top mix-blend-screen"
+          className="pointer-events-none absolute inset-x-0 top-0 h-[75%] origin-top"
           style={{ opacity: "calc(0.65 - var(--c) * 0.65)", transform: "skewX(calc(var(--mx, 0) * -6deg))" }}
           aria-hidden="true"
         >
           {[14, 27, 39, 48, 55, 66, 79, 88].map((l, i) => (
             <span
               key={l}
-              className="absolute top-0 h-full bg-gradient-to-b from-white/45 via-white/10 to-transparent blur-[2px]"
+              className="absolute top-0 h-full bg-gradient-to-b from-white/30 via-white/[0.06] to-transparent"
               style={{ left: `${l}%`, width: `${[6, 2, 10, 1, 4, 2, 8, 1][i]}px`, animation: `jv-beam ${3 + i * 0.7}s ease-in-out ${-i}s infinite` }}
             />
           ))}
         </div>
 
-        {/* Niebla en capas con parallax */}
-        <div
-          className="absolute inset-0"
-          style={{
-            transform: "translate(calc(var(--mx, 0) * -24px), calc(var(--h) * -6vh + var(--b) * -18vh))",
-            opacity: "calc(0.22 + var(--h) * 0.15 - var(--c) * 0.4)",
-          }}
-        >
-          <Fog seed={4} tint="0.7 0.7 0.72" className="-left-[10%] top-[30%] h-[80%] w-[140%] [animation:jv-drift_40s_ease-in-out_infinite]" />
-        </div>
-
-        {/* Logo fijo desde el primer momento, con armas cruzadas detrás */}
+        {/* Logo fijo desde el primer momento */}
         <div
           className="absolute left-1/2 top-[37%] z-[26] w-[min(104vw,clamp(280px,60dvh,640px))] md:top-[38%]"
           style={{
@@ -1840,7 +1798,7 @@ function ChapterOrigin({ index, setRef }) {
 
         {/* Fondo del estudio que aparece detrás del panel */}
         <div className="absolute inset-0 z-[15]" style={{ opacity: "var(--c)" }} aria-hidden="true">
-          <img src={IMAGES.studioWall} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ transform: "scale(calc(1.08 - var(--d) * 0.04))", filter: "blur(3px) saturate(.8)" }} />
+          <img src={IMAGES.studioWall} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ filter: "saturate(.8)" }} />
           <div className="absolute inset-0 bg-[#050505]/75" />
         </div>
 
@@ -1875,7 +1833,7 @@ function ChapterOrigin({ index, setRef }) {
               />
               {/* Reflejo especular que se mueve con el ratón */}
               <div
-                className="pointer-events-none absolute inset-0 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 opacity-50"
                 style={{
                   background: "linear-gradient(115deg, transparent 30%, rgba(255,255,255,.35) 48%, transparent 62%)",
                   transform: "translateX(calc(var(--mx, 0) * 40%))",
@@ -1916,7 +1874,6 @@ function ChapterOrigin({ index, setRef }) {
                     className={`inline-block ${em ? "font-['Oswald'] font-semibold uppercase tracking-[0.08em] text-[#FF4D4D]" : ""}`}
                     style={{
                       opacity: `calc(0.12 + 0.88 * ${t})`,
-                      filter: `blur(calc((1 - ${t}) * 6px))`,
                       transform: `translateY(calc((1 - ${t}) * 0.25em))`,
                     }}
                   >
@@ -1982,7 +1939,6 @@ function ChapterBooking({ setRef, booking, setBooking }) {
         <img src={IMAGES.crowdGold} alt="" className="absolute inset-0 h-full w-full object-cover" style={{ transform: "scale(calc(1.08 - var(--enter, 0) * 0.06))" }} />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_45%,rgba(10,10,11,.9)_0%,rgba(5,5,5,.88)_50%,rgba(0,0,0,.8)_100%)]" />
       </div>
-      <Fog seed={21} tint="0.6 0.6 0.62" className="left-0 top-0 h-full w-full" style={{ opacity: "calc(var(--enter, 0) * 0.9)" }} />
       <div
         className="pointer-events-none absolute left-1/2 top-[18%] -translate-x-1/2 whitespace-nowrap font-['Anton'] text-[clamp(5rem,22vw,22rem)] uppercase leading-none text-white/[0.05]"
         style={{ transform: "translateX(calc(-50% + (1 - var(--enter, 0)) * 20vw))" }}
@@ -2129,7 +2085,7 @@ function JVProductions() {
     window.history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const ease = reduce ? 1 : 0.17;
+    const ease = reduce ? 1 : 0.26;
     const docEl = document.documentElement;
     const state = [];
     const mouse = { x: 0, y: 0, sx: 0, sy: 0 };
@@ -2157,17 +2113,30 @@ function JVProductions() {
         s.p = approach(s.p, tp);
         s.e = approach(s.e, te);
         if (s.p !== tp || s.e !== te) moving = true;
-        el.style.setProperty("--p", s.p.toFixed(4));
-        el.style.setProperty("--enter", s.e.toFixed(4));
-        listeners.current.get(i)?.forEach((fn) => fn(s.p, s.e));
+        // Solo se toca el estilo si el valor cambia: las secciones fuera de pantalla no recalculan nada
+        const p = s.p.toFixed(4);
+        const e = s.e.toFixed(4);
+        if (p !== s.wp || e !== s.we) {
+          s.wp = p;
+          s.we = e;
+          el.style.setProperty("--p", p);
+          el.style.setProperty("--enter", e);
+          listeners.current.get(i)?.forEach((fn) => fn(s.p, s.e));
+        }
         if (r.top <= vh * 0.5) current = i;
       });
 
       mouse.sx += (mouse.x - mouse.sx) * 0.08;
       mouse.sy += (mouse.y - mouse.sy) * 0.08;
       if (Math.abs(mouse.x - mouse.sx) > 0.001 || Math.abs(mouse.y - mouse.sy) > 0.001) moving = true;
-      docEl.style.setProperty("--mx", mouse.sx.toFixed(4));
-      docEl.style.setProperty("--my", mouse.sy.toFixed(4));
+      const mx = mouse.sx.toFixed(3);
+      const my = mouse.sy.toFixed(3);
+      if (mx !== mouse.wx || my !== mouse.wy) {
+        mouse.wx = mx;
+        mouse.wy = my;
+        docEl.style.setProperty("--mx", mx);
+        docEl.style.setProperty("--my", my);
+      }
 
       first = false;
       setActive((a) => (a === current ? a : current));
@@ -2247,7 +2216,7 @@ function JVProductions() {
 
   return (
     <ProgressCtx.Provider value={ctx}>
-      <div className="jv-grain relative overflow-x-clip bg-[#050505] font-['Space_Grotesk'] text-zinc-200 antialiased">
+      <div className="relative overflow-x-clip bg-[#050505] font-['Space_Grotesk'] text-zinc-200 antialiased">
         <GlobalStyles />
         <Intro onDone={() => setReady(true)} />
         <World3D />
